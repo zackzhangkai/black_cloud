@@ -106,6 +106,7 @@
 2019-09-20 17:46:40,246 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 13599
 2019-09-20 17:46:45,882 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 13599
 2019-09-20 17:47:41,584 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 19080
+<<<<<<< HEAD
 2019-09-20 17:55:34,482 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 19080
 2019-09-20 17:55:36,590 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 19080
 2019-09-20 17:55:39,188 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 19080
@@ -653,3 +654,8 @@ FileNotFoundError: [Errno 2] No such file or directory: '/Users/baiyu/Desktop/BC
 2019-09-20 19:41:56,736 basehttp.log_message 154 INFO    => "GET /operation/operation_board/?current_page=1 HTTP/1.1" 200 19196
 2019-09-20 19:42:06,585 basehttp.log_message 154 INFO    => "POST /operation/upload_file/ HTTP/1.1" 200 14
 2019-09-20 19:42:07,419 basehttp.log_message 154 INFO    => "GET /operation/operation_board/?current_page=1 HTTP/1.1" 200 19196
+=======
+2019-09-20 19:12:16,780 basehttp.log_message 154 INFO    => "GET / HTTP/1.1" 302 0
+2019-09-20 19:12:16,947 basehttp.log_message 154 INFO    => "GET /account/login/ HTTP/1.1" 200 2872
+2019-09-20 19:12:17,098 basehttp.log_message 154 INFO    => "GET /static/css/bootstrap.css HTTP/1.1" 304 0
+>>>>>>> dd0dce1428d36cc4b60b5b84c799dff8c3630035
