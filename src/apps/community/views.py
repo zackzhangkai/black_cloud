@@ -13,7 +13,7 @@ def topic_list(request):
     """返回topic列表"""
     uid = request.user.id
     current_page = 1 if not request.GET.get('current_page') else request.GET.get('current_page')
-    topics = Topic.objects.filter()
+    topics = Topic.objects.filter().order_by("date")
     paginator = Paginator(object_list=topics, per_page=10)
     try:
         page = paginator.page(current_page)
@@ -30,7 +30,7 @@ def topic_details(request):
     uid = request.user.id
     topic_id = request.POST.get('topic_id')
     topic_details = Topic.objects.filter(id=topic_id)
-    comments = Comment.object.filter(topic_id=topic_id)
+    comments = Comment.object.filter(topic_id=topic_id).order_by("date")
     return
 
 
