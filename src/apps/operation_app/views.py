@@ -10,8 +10,9 @@ from django.shortcuts import render, HttpResponse, redirect
 from apps.operation_app.utils.processor import get_hashed_name
 from apps.operation_app.models import FilesRecorder, SharingRecorder
 from storage.qingstor_package import (
-    new_bucket, put, get, delete, list
+    new_bucket, qs_put, qs_delete, qs_list
 )
+from storage.qingstor_package import qs_get, gen_view_url
 
 # Create your views here.
 
@@ -69,7 +70,7 @@ def handle_uploading_file(request):
     print(cwd)
     cwd = '/'.join(cwd.split('/')[:-2])+'/storage/'
     with open(cwd + filename, 'rb') as f:
-        put(filename, f)
+        qs_put(filename, f)
 
     return HttpResponse('upload-success')
 
@@ -153,6 +154,21 @@ def delete_this_sharing(request):
     on_delete.deleted_time = datetime.datetime.now()
     on_delete.save()
     return HttpResponse('delete-success')
+
+
+
+
+
+
+@login_required
+def view_file(request):
+    """查看文件"""
+    filename = request.GET.get('file_name')
+    gened_uri = gen_view_url(object_name=filename)
+
+    return HttpResponse(gened_uri)
+
+
 
 
 

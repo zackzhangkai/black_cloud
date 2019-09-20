@@ -212,7 +212,7 @@
                     <td>{{ file.file_type }}</td>
                     <td>{{ file.upload_date }}</td>
                     <td>
-                        <a href="javascript:download_this('{{ file.file_name }}', '{{ file.hashed_name }}','{{ file.file_type }}');">查看</a>
+                        <a href="javascript:view_this('{{ file.file_name }}', '{{ file.hashed_name }}','{{ file.file_type }}');">查看</a>
                         <a href="javascript:download_this('{{ file.file_name }}', '{{ file.hashed_name }}','{{ file.file_type }}');">下载</a>
                         <a href="javascript:delete_this_file('{{ user.id }}', '{{ file.id }}')">删除</a>
                         <a  href="javascript:share_this_file('{{ file.hashed_name }}');">分享</a>
@@ -255,6 +255,12 @@
 {#    </div>#}
 
     <script type="text/javascript">
+
+        function view_this(file_name, hashed_name, file_type) {
+            location.href = "{% url 'operation_app:view_file' %}?file_name="
+                + file_name + '&hashed_name=' + hashed_name + '&file_type=' + file_type;
+        }
+
         function download_this(file_name, hashed_name, file_type) {
             location.href = "{% url 'operation_app:download_file' %}?file_name="
                 + file_name + '&hashed_name=' + hashed_name + '&file_type=' + file_type;
