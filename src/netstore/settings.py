@@ -87,7 +87,7 @@ DATABASES = {
         'NAME': 'netstore_project',
         'USER': 'qc',
         'PASSWORD': '12345678',
-        'HOST': '139.198.18.252',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 

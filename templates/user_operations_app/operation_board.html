@@ -256,10 +256,60 @@
 
     <script type="text/javascript">
 
-        function view_this(file_name, hashed_name, file_type) {
-            location.href = "{% url 'operation_app:view_file' %}?file_name="
-                + file_name + '&hashed_name=' + hashed_name + '&file_type=' + file_type;
+        // XHR 对象创建
+    function createXHR() {
+        if (typeof XMLHttpRequest != "undefined"){
+            return new XMLHttpRequest();
+        } else if (typeof ActiveXObject != "undefined"){
+            if (typeof arguments.callee.activeXString != "undefined"){
+                var versions = [
+                    "MSXML2.XMLHttp.6.0",
+                    "MSXML2.XMLHttp.3.0",
+                    "MSXML2.XMLHttp"],
+                    i, len;
+                for (i=0, len=versions.length; i<len; i++){
+                    try {
+                        new ActiveXObject((version[i]));
+                        arguments.callee.activeXString = versions[i];
+                    }catch(ex){
+                        // pass
+                    }
+                }
+            }
         }
+    }
+
+
+
+
+
+
+
+        function view_this(file_name, hashed_name, file_type) {
+            console.log('hihihihi');
+            gen_url_dest = "{% url 'operation_app:view_file' %}?file_name="
+                + file_name + '&hashed_name=' + hashed_name + '&file_type=' + file_type;
+
+            var xhr = createXHR();
+            xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4){
+                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304){
+                    console.log(xhr.responseText);
+                    window.open(xhr.responseText);
+                }else{
+                    alert("Request was unsuccessful: " + xhr.status);
+                }
+            }
+
+            };
+
+            console.log('nonono');
+            xhr.open("get", gen_url_dest, true);
+            xhr.send()
+        }
+
+
+
 
         function download_this(file_name, hashed_name, file_type) {
             location.href = "{% url 'operation_app:download_file' %}?file_name="
