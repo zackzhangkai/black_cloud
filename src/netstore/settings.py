@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.accounts_app',
     'apps.operation_app',
     'apps.community',
+    'apps.qstor_app',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,2504 @@
+{
+  "id": 17,
+  "ret_code": 0,
+  "action": "Boss2ChangeBossUserPasswdResponse"
+}
+
+本系统对 API 的请求使用 POST 方式，直接传入 json 数据即可。
+
+注意：
+
+除了登录认证、文件上传等接口外，其他接口均使用/api作为请求路径即可。
+
+(在本文档中，部分接口的path形式类似于：/api/Boss2DescribeBossUsers，这是为了避开yapi系统的限制而刻意为之。)
+
+API 请求结构
+
+
+例如 Boss2GetDashboardStats
+
+api返回语言，使用该参数设定接口报错等情况下返回的提示语言，支持
+- en(英文)
+- zh-cn(中文)
+
+如不指定，则会使用用户自己的语言设置来进行显示，默认为中文
+
+
+1 : 返回所有详细信息
+0 : 只返回关键信息
+
+activate, pending, available 等，针对不同的资源有不同的状态，
+详细说明见各个接口说明
+
+
+该鉴权方式可直接供前端静态页面使用。
+
+使用/login_action 接口登录后后端将会设置cookie: boss2_sk， 在返回数据中包含有该sk及session有效期，该cookie值可用于后续接口请求时的认证。
+
+后续请求时请在请求的headers里面带上以下的cookie值：
+
+
+
+
+可通过qingcloud sdk直接进行API的操作。
+
+
+Qingcloud API文档： https://docs.qingcloud.com/product/api/
+Qingcloud SDK文档：https://docs.qingcloud.com/product/sdk/
+
+
+使用SDK请求数据时，请按照以下的方式进行配置：
+
+url请设置为/boss2/，同时设置verb为“POST”以正确发起请求;
+请将请求的参数转换为json格式放置到一个名为params的字段中，以python SDK为例，对于获取zone的请求，在发送到IAAS时，格式可能为：
+
+
+{
+    'action': 'DescribeZones',
+    'zones': ['beta', 'delta'],
+    'limit': 10
+}
+
+{
+    'action': 'DescribeZones',
+    'params': '{"zones": ["beta", "delta"], "limit": 10}'
+}
+
+$ pip install qingcloud-sdk
+
+
+$ git clone https://github.com/yunify/qingcloud-sdk-python.git
+$ cd qingcloud-sdk-python
+$ python setup.py install
+
+
+Boss2GetAggsStats
+
+from qingcloud.iaas.connection import APIConnection
+from json import dumps
+
+class BOSS2Client(APIConnection):
+
+
+
+def request(self, request_body):
+
+
+
+action = request_body.pop('action', '')
+
+json_params = dumps(request_body)
+
+
+
+
+IAAS 原生获取汇总统计(GetResourceSummary)
+
+
+计算节点列表(Boss2DescribeBots)
+
+/api/Boss2DescribeBots
+
+获取计算节点列表，该接口封装了iaas的DescribeBots接口，并加入了IP、磁盘总量等字段。
+ode": 0
+}
+
+
+
+
+
+提交导出任务(Boss2SubmitReportTask)
+
+/api/Boss2SubmitReportTask
+
+
+
+导出报表的类型
+
+instance 主机
+instance_performance 主机性能
+bot 计算节点
+bot_performance 计算节点性能
+bot_with_instance 计算节点性能带主机数据
+eip 公网IP
+volume 硬盘
+alert 告警 params 里需要 verbose=1
+security_group_with_rules 防火墙(包含规则)
+security_group_with_resource 防火墙(包含资源)
+security_group_ipset IP端口集合 params 里需要 verbose=1
+bi BI数据报表
+security_group_rules_with_ipsets 防火墙详情，包含规则和IP端口集合，用于 console 导入，params 传 DescribeSecurityGroupRules 的参数
+
+
+
+
+
+
+
+
+security_group_rules_with_ipsets 报表 params 推荐为：
+
+{
+    "verbose": 1,
+    "security_group": "SECURITY_GROUP_ID",
+    "zone": "test"
+}
+
+另外，需要前端传 filename 参数指定文件名，PM 要求的格式为 防火墙规则_SECURITY_GROUP_ID。
+
+导出报表的列，传空列表时导出后端可以导出的所有列（BI报表除外，BI 报表列完全按照前端传入的列进行导出）。
+导出报表参数：其实为发给相应接口的参数去掉 offset、limit 和 action（不去掉也可以，我会过滤掉的）。
+
+
+{
+    "action": "Boss2SubmitReportTask",
+    "topic": "instance",
+    "filename": "文件名",
+    "fields": ["instance_id", "instance_name", "create_time"],
+    "params": {
+        "zone":"test",
+        "sort_key":"create_time",
+        "reverse":1,
+        "status":["stopped"]
+    }
+}
+
+{
+    "token": "9e7da772-229e-495e-9014-ffbd392565eb",
+    "valid_fields": [
+        "instance_id",
+        "instance_name",
+        "create_time"
+    ],
+    "ret_code": 0,
+    "action": "Boss2SubmitReportTaskResponse"
+}
+
+application/json
+获取导出任务列表(Boss2DescribeReportTasks)
+
+
+{
+    "action": "Boss2DescribeReportTasks",
+    "limit": 10,
+    "offset": 0,
+    "sort_key": "create_time",
+    "reverse": 1,
+    "token": ["5dd5ac27-d733-42d0-b6e0-ed257409d9e1"],
+    "status": ["finished"]
+}
+
+
+{
+    "total_count": 2,
+    "task_set": [
+        {
+            "token": "a242bf78-3d85-441f-bca3-583948447577",
+            "create_time": "2019-03-08T06:44:59.237Z",
+            "status_time": "2019-03-08T06:44:59.237Z",
+            "topic": "计算节点",
+            "status": 2,
+            "remarks": null,
+            "filename": "计算节点_201901011122.csv"
+        }
+    ],
+    "ret_code": 0,
+    "action": "Boss2DescribeReportTasksResponse"
+}
+
+
+
+直接下载报表(Boss2DownloadReport)
+
+
+
+
+：http://boss2.testing.com/download/report?token=8a4a2153-4310-4df5-926a-683f954e9c5f&encoding=gbk
+
+
+
+/download/report/
+
+
+本接口通过GET方式来下载报表文件，可在url中提供token和encoding参数，在新窗口中打开链接，完成报表的下载。
+拼接的下载链接示例为：http://boss2.testing.com/download/report?token=8a4a2153-4310-4df5-926a-683f954e9c5f&encoding=gbk
+
+
+token	是	
+8de5770d-87e2-4129-9214-b3556ae5b131
+报告的token
+encoding	否	
+gbk
+报告编码，可选utf8和gbk
+
+
+下载报表(Boss2DownloadReport)
+
+Content-Type:application/octet-stream
+Content-Disposition →attachment; filename*=utf-8''%E4%B8%BB%E6%9C%BA_201903081441.csv
+
+
+
+
+返回数据即为报表 csv 文件，设置了 header 为：
+
+
+
+application/json
+
+
+{
+	"action": "Boss2DownloadReport",
+	"token": "e99a345c-f035-4eb9-baf6-7d9fe2d27ce5",
+	"encoding": "gbk"
+}
+
+{
+  "action": "Boss2RetryReportTask",
+  "token": "680743b8-5ce9-47b0-b1a1-99920737523c"
+}
+
+
+重试导出任务(Boss2RetryReportTask)
+
+{
+  "token": "680743b8-5ce9-47b0-b1a1-99920737523c",
+  "valid_fields": [
+    "eip_id",
+    "eip_name",
+    "status",
+    "eip_addr",
+    "bandwidth",
+    "owner",
+    "resource.resource_id",
+    "resource.resource_name",
+    "is_quarantined",
+    "associate_mode",
+    "create_time"
+  ],
+  "ret_code": 0,
+  "action": "Boss2RetryReportTaskResponse"
+}
+
+
+创建API KEY(Boss2CreateAPIKey)
+
+
+
+为当前用户生成access_key及secret_key
+
+{
+	"action": "Boss2CreateAPIKey",
+	"remarks": "yoyo"
+}
+
+
+
+
+{
+  "access_key": "AHLEJRUCKVKELGTYMOOH",
+  "secret_key": "2ETNfmBZGbeVCbeil6IuoBFsHDPpeBCMEZ3U43Fb",
+  "remarks": "yoyo",
+  "ret_code": 0,
+  "action": "Boss2CreateAPIKeyResponse"
+}
+
+获取 API Key 列表(Boss2DescribeAPIKey)
+
+
+/api/Boss2DescribeAPIKey
+
+{
+	"action": "Boss2DescribeAPIKey",
+	"user_id": 3,
+	"limit": 10,
+	"offset": 0,
+	"search_word": "",
+	"status": [],
+	"sort_key": "create_time",
+	"reverse": 0
+}
+
+{
+  "total_count": 1,
+  "api_key_set": [
+    {
+      "access_key": "AHLEJRUCKVKELGTYMOOH",
+      "status": 0,
+      "create_time": "2019-07-02T08:09:47.190Z",
+      "remarks": "yoyo"
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeAPIKeyResponse"
+}
+
+获取当前用户的API Key列表(Boss2DescribeCurrentAPIKey)
+
+{
+    "total_count": 2,
+    "api_key_set": [
+        {
+            "access_key": "YIMPWNIIGXWPDJDTRNRE",
+            "status": 0,        // 
+            "create_time": "2019-03-08T07:03:34.862Z",
+            "remarks": null     // 备注
+        },
+        {
+            "access_key": "AROIVIWUKSYAPYYGUDZV",
+            "status": 0,
+            "create_time": "2019-03-08T07:03:30.259Z",
+            "remarks": null
+        }
+    ],
+    "ret_code": 0,
+    "action": "Boss2DescribeAPIKeyResponse"
+}
+
+
+{
+	"action": "Boss2DescribeCurrentAPIKey",
+	"limit": 10,
+	"offset": 0,
+	"search_word": "",
+	"status": [],
+	"sort_key": "create_time",
+	"reverse": 0
+}
+
+
+{
+    "total_count": 2,
+    "api_key_set": [
+        {
+            "access_key": "YIMPWNIIGXWPDJDTRNRE",
+            "status": 0,
+            "create_time": "2019-03-08T07:03:34.862Z",
+            "remarks": null
+        },
+        {
+            "access_key": "AROIVIWUKSYAPYYGUDZV",
+            "status": 0,
+            "create_time": "2019-03-08T07:03:30.259Z",
+            "remarks": null
+        }
+    ],
+    "ret_code": 0,
+    "action": "Boss2DescribeAPIKeyResponse"
+}
+
+
+修改 API Key(Boss2ModifyAPIKey)
+
+
+{
+	"action": "Boss2ModifyAPIKey",
+	"user_id": 1,
+	"access_key": "YIMPWNIIGXWPDJDTRNRE",
+	"operation": "disable"
+}
+
+{
+  "access_key": "YIMPWNIIGXWPDJDTRNRE",
+  "ret_code": 0,
+  "action": "Boss2ModifyAPIKeyResponse"
+}
+
+修改当前用户的API Key(Boss2ModifyCurrentAPIKey)
+{
+	"action": "Boss2ModifyCurrentAPIKey",
+	"access_key": "YIMPWNIIGXWPDJDTRNRE",   //用户API秘钥ID
+	"operation": "disable"                  // 操作：disable-禁用，delete-删除，activate-启用，状态表见备注
+}
+
+{
+  "access_key": "YIMPWNIIGXWPDJDTRNRE",
+  "ret_code": 0,
+  "action": "Boss2ModifyAPIKeyResponse"
+}
+
+查看当前用户的API Key 的 secret key(Boss2DescribeAPIKeySK)
+
+{
+  "action": "Boss2DescribeAPIKeySK",
+  "access_key": "AHLEJRUCKVKELGTYMOOH",
+  "password": "zhu88jie"
+}
+
+{
+  "access_key": "AHLEJRUCKVKELGTYMOOH",
+  "secret_key": "2ETNfmBZGbeVCbeil6IuoBFsHDPpeBCMEZ3U43Fb",
+  "ret_code": 0,
+  "action": "Boss2DescribeAPIKeySKResponse"
+}
+
+获取当前用户API Key统计(Boss2GetCurrentAPIKeyStats)
+
+{
+  "data": {
+    "active": 2,
+    "disabled": 1,
+    "total": 3
+  },
+  "ret_code": 0,
+  "action": "Boss2GetCurrentAPIKeyStatsResponse"
+}
+
+{
+  "action": "Boss2GetCurrentAPIKeyStats"
+}
+
+V2V映像上传(v2v_upload)
+
+/file/v2v_upload/upload_host/?dir=/tmp/testdir
+
+
+用于V2V映像文件的上传。
+使用方法与映像注册时的上传接口类似，但略有不同：
+1. url中需带上传服务器的ip及端口，以此方式将镜像上传至不同zone的v2v虚拟机上，上传服务器的ip和端口可通过Boss2DescribeV2VZones获得，如对v2vtest这个zone进行操作，Boss2DescribeV2VZones的结果中该zone对应的upload字段值为：192.168.5.46:45670，则上传镜像的url为：/file/v2v_upload/192.168.5.46:45670/，注意结尾的“/”必须携带
+2. url中需带上v2v创建任务时选择的目录，以将此文件上传至指定的目录，如在界面上选择了目录为/home/ubuntu/testdir，则上传使用的url为: /file/v2v_upload/192.168.5.46:45670/?dir=/home/ubuntu/testdir
+
+
+
+请使用form方式上传文件，文件上传后将会返回文件的实际路径，支持大文件上传。
+注意，本接口暂时不支持直接在yapi上进行测试。
+本接口上传时需要制定文件的key为file (使用其他的key会导致返回结果为空)
+
+application/x-www-form-urlencoded
+
+
+path	String	文件在服务器上的实际路径	
+filename	String	上传文件的原始文件名	
+md5	String	上传文件的 hash	
+dir	String	上传时指定的dir	
+size	String	上传文件的体积
+
+{
+  "ret_code": 0,
+  "filename": "test.img",
+  "path": "/tmp/testdir/test.img",
+  "md5": "c56ca2afd79e578b216e2ac72079938b",
+  "dir": "/tmp/testdir",
+  "size": "3561"
+}
+
+V2V获取上传进度(v2v_get_state)
+
+
+/file/v2v_get_state/
+
+用于V2V映像文件的上传，可通过该接口检查文件的上传进度，以判断是否进行断点续传。
+
+使用方法与V2V上传接口类似：url中需带上传服务器的ip及端口，以此方式将请求转发至不同zone的v2v虚拟机上，上传服务器的ip和端口可通过Boss2DescribeV2VZones获得，如对v2vtest这个zone进行操作，Boss2DescribeV2VZones的结果中该zone对应的upload字段值为：192.168.5.46:45670，则获取上传进度的url为：/file/v2v_get_state/192.168.5.46:45670/，注意结尾的“/”必须携带
+
+{
+    "filename": "testfile.txt",
+    "size": 1048576,
+    "type": "v2v"
+}
+
+
+{
+  "state": [
+    "0-3071/1048576"
+  ],
+  "session_id": "8bb121c91b74768360b849227aba38dd",
+  "ret_code": 0
+}
+
+
+获取可用zone列表(Boss2DescribeV2VZones)
+
+/api/Boss2DescribeV2VZones
+
+V2V服务目前是每个 zone 部署一个，所以可能存在有的zone没有部署的情况。
+所以该接口用于获取可用的 zone 列表，用户只能选择该列表中指定的 zone。
+
+
+{
+    "zone_set": [
+        {
+            "name": "v2vtest",
+            "upload": "192.168.5.46:45670" // 
+        }
+    ],
+    "ret_code": 0,
+    "action": "Boss2DescribeV2VZonesResponse"
+}
+{
+  "action": "Boss2DescribeV2VZones"
+}
+
+创建镜像目录(Boss2CreateV2VImageRepo)
+
+{
+	"action": "Boss2CreateV2VImageRepo",
+	"desc": "invoker_test1",
+	"zone": "v2vtest"
+}
+
+{
+    "action": "Boss2CreateV2VImageRepoResponse",
+    "image_repo_path": "/home/ubuntu/rep-fh2upgkr",
+    "owner": "boss",
+    "ret_code": 0,
+    "zone": "v2vtest"
+}
+application/json
+删除镜像文件(Boss2RemoveV2VImage)
+
+{
+	"action": "Boss2RemoveV2VImage",
+	"image_path": "/home/ubuntu/dirname/image",
+	"zone": "v2vtest"
+}
+
+{
+  "action": "Boss2RemoveV2VImageRepoResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "zone": "v2vtest"
+}
+
+获取迁移任务列表(Boss2DescribeV2VTasks)
+
+
+{
+  "action": "Boss2DescribeV2VTasks",
+  "zone": "test",
+  "offset": 0,
+  "limit": 100,
+  "keyword": {
+    "status": [
+      "new"
+    ],
+    "v2v_id": "v2v-eomp10py"
+  }
+}
+
+owner	String	资源所有者	
+total_count	Integer	资源总数	
+v2v_set	Array	v2v 任务详情信息	
+block_bus	String	
+console_id	String	
+cpu	Integer		
+create_time	String	
+features	Integer	
+image_id	String	
+instance_class	String	
+memory	Integer	
+nic_type	String	
+os_family	String	
+owner	String	
+passwd	String	
+platform	String	
+size	Integer	
+status	String	
+status_time	String	
+user	String	
+user_id	String	
+v2v_id	String	
+v2v_name	String	v2v 名称	
+volumes	Array	硬盘详情数据	
+
+
+{
+  "action": "Boss2DescribeV2VTasks",
+  "zone": "test",
+  "offset": 0,
+  "limit": 100,
+  "keyword": {
+    "status": [
+      "new"
+    ],
+    "v2v_id": "v2v-eomp10py"
+  }
+}
+
+
+删除镜像目录(Boss2RemoveV2VImageRepo)
+
+
+{
+	"action": "Boss2RemoveV2VImageRepo",
+	"image_repo_path": "/home/ubuntu/rep-fh2upgkr",
+	"zone": "v2vtest"
+}
+
+{
+  "action": "Boss2RemoveV2VImageRepoResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "zone": "v2vtest"
+}
+
+
+
+
+
+获取服务器配置(Boss2DescribeV2VConfig)
+
+{
+  "action": "Boss2DescribeV2VConfig",
+  "zone": "test"
+}
+
+{
+  "action": "Boss2RemoveV2VImageRepoResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "zone": "v2vtest"
+}
+
+{
+  "action": "Boss2DescribeV2VConfigResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "block_bus": [
+        "hd",
+        "vd",
+        "sd"
+      ],
+      "cpu_type": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "features": [
+        4,
+        7,
+        0
+      ],
+      "instance_class": [
+        0,
+        1
+      ],
+      "memory_type": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "net_drive": [
+        "e1000",
+        "virtio"
+      ],
+      "os_family": [
+        "windows",
+        "centos",
+        "debian",
+        "ubuntu",
+        "suse",
+        "redhat"
+      ],
+      "v2v_dirs": [
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-ivnzws2c"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-cmscz1yf"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-ze8yt09v"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-0zsvuwra"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-taljh9ab"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-ns3ihs1m"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-gi9vo8se"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-n1y55c05"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-y7381nfx"
+        },
+        {
+          "dir_desc": "adasdsadsadasdsd\n",
+          "dir_name": "/home/ubuntu/app01"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-tq1aep8h"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-1s9edx17"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-hkmlf1mk"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-mxpbgmmz"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-3cj01pa1"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-xh6ovrd1"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-3qpcnzl8"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-m9hr6qu2"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/-td2076os"
+        },
+        {
+          "dir_desc": "invoker_test1",
+          "dir_name": "/home/ubuntu/rep-j2ubfapq"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/app02"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-uxjdygwn"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-kzbk9kt3"
+        },
+        {
+          "dir_desc": "abc",
+          "dir_name": "/home/ubuntu/rep-cz2fx1uj"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-dlykr65h"
+        }
+      ],
+      "vxnets": [
+        {
+          "ip_network": "10.73.32.0/22",
+          "vxnet_id": "vxnet-5say623"
+        },
+        {
+          "ip_network": "10.73.23.0/24",
+          "vxnet_id": "vxnet-dyb7mvy"
+        },
+        {
+          "ip_network": "10.73.20.0/24",
+          "vxnet_id": "vxnet-r0ipqho"
+        },
+        {
+          "ip_network": "192.168.12.0/24",
+          "vxnet_id": "vxnet-bok16me"
+        },
+        {
+          "ip_network": "10.73.18.0/24",
+          "vxnet_id": "vxnet-z6s3xfr"
+        },
+        {
+          "ip_network": "10.73.25.0/24",
+          "vxnet_id": "vxnet-u0yt0gh"
+        },
+        {
+          "ip_network": "10.73.13.0/24",
+          "vxnet_id": "vxnet-pyb2w83"
+        },
+        {
+          "ip_network": "123.123.201.99/24",
+          "vxnet_id": "vxnet-n0hck5x"
+        },
+        {
+          "ip_network": "192.168.11.0/24",
+          "vxnet_id": "vxnet-qqavyyk"
+        },
+        {
+          "ip_network": "10.73.15.0/24",
+          "vxnet_id": "vxnet-j8cm5t8"
+        },
+        {
+          "ip_network": "10.73.24.0/24",
+          "vxnet_id": "vxnet-ytrqexk"
+        },
+        {
+          "ip_network": "10.73.16.0/24",
+          "vxnet_id": "vxnet-7xw2nmt"
+        },
+        {
+          "ip_network": "10.73.17.0/24",
+          "vxnet_id": "vxnet-8oqt3al"
+        },
+        {
+          "ip_network": "10.73.19.0/24",
+          "vxnet_id": "vxnet-f0ibzjx"
+        },
+        {
+          "ip_network": "192.168.10.0/24",
+          "vxnet_id": "vxnet-zv5hwka"
+        },
+        {
+          "ip_network": "10.73.11.0/24",
+          "vxnet_id": "vxnet-bl3engt"
+        },
+        {
+          "ip_network": "10.73.12.0/24",
+          "vxnet_id": "vxnet-52qr3zq"
+        },
+        {
+          "ip_network": "192.168.12.0/24",
+          "vxnet_id": "vxnet-wmger63"
+        },
+        {
+          "ip_network": "10.73.29.0/24",
+          "vxnet_id": "vxnet-rc1gbbr"
+        },
+        {
+          "ip_network": "10.73.20.0/24",
+          "vxnet_id": "vxnet-nt7ovnp"
+        }
+      ]
+    }
+  ],
+  "zone": "v2vtest"
+}
+
+
+获取服务器配置(Boss2DescribeV2VConfig)
+
+owner	String	资源所有者	
+v2v_set	Array	服务器配置信息	
+block_bus	Array	块总线	
+cpu_type	Array	cpu 类型	
+features	Array	特性标识码	
+instance_class	Array	主机类型列表	
+memory_type	Array	内存类型列表	
+net_drive	Array	网络驱动	
+os_family	Array	操作系统类型	
+v2v_dirs	Array	v2v 目录	
+vxnets	Array	私有网络详情数据	
+
+{
+	"action": "Boss2RemoveV2VImageRepo",
+	"image_repo_path": "/home/ubuntu/rep-fh2upgkr",
+	"zone": "v2vtest"
+}
+{
+  "action": "Boss2DescribeV2VConfigResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "block_bus": [
+        "hd",
+        "vd",
+        "sd"
+      ],
+      "cpu_type": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "features": [
+        4,
+        7,
+        0
+      ],
+      "instance_class": [
+        0,
+        1
+      ],
+      "memory_type": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ],
+      "net_drive": [
+        "e1000",
+        "virtio"
+      ],
+      "os_family": [
+        "windows",
+        "centos",
+        "debian",
+        "ubuntu",
+        "suse",
+        "redhat"
+      ],
+      "v2v_dirs": [
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-ivnzws2c"
+        },
+        {
+          "dir_desc": "",
+          "dir_name": "/home/ubuntu/rep-cmscz1yf"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-ze8yt09v"
+        },
+        {
+          "dir_desc": "abcd",
+          "dir_name": "/home/ubuntu/rep-0zsvuwra"
+        }
+      ],
+      "vxnets": [
+        {
+          "ip_network": "10.73.32.0/22",
+          "vxnet_id": "vxnet-5say623"
+        },
+        {
+          "ip_network": "10.73.23.0/24",
+          "vxnet_id": "vxnet-dyb7mvy"
+        },
+        {
+          "ip_network": "10.73.20.0/24",
+          "vxnet_id": "vxnet-r0ipqho"
+        },
+        {
+          "ip_network": "192.168.12.0/24",
+          "vxnet_id": "vxnet-bok16me"
+        }
+      ]
+    }
+  ],
+  "zone": "v2vtest"
+}
+
+
+
+获取目录下镜像文件列表(Boss2DescribeV2VDirImages)
+
+{
+  "action": "Boss2DescribeV2VDirImages",
+  "zone": "test",
+  "dir": "/home/ubuntu/app01"
+}
+
+
+{
+  "action": "Boss2DescribeV2VDirImagesResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "file": "/home/ubuntu/app01/disk1.img",
+      "format": "vmdk",
+      "st_size": 1376256,
+      "url": "172.31.20.99:'/home/ubuntu/app01/disk1.img'",
+      "v_size": 20,
+      "volume_name": "disk1.img"
+    },
+    {
+      "file": "/home/ubuntu/app01/disk2.img",
+      "format": "vmdk",
+      "st_size": 2686976,
+      "url": "172.31.20.99:'/home/ubuntu/app01/disk2.img'",
+      "v_size": 30,
+      "volume_name": "disk2.img"
+    }
+  ]
+}
+
+
+{
+  "action": "Boss2DescribeV2VDirImages",
+  "zone": "test",
+  "dir": "/home/ubuntu/app01"
+}
+
+{
+  "action": "Boss2DescribeV2VDirImagesResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "file": "/home/ubuntu/app01/disk1.img",
+      "format": "vmdk",
+      "st_size": 1376256,
+      "url": "172.31.20.99:'/home/ubuntu/app01/disk1.img'",
+      "v_size": 20,
+      "volume_name": "disk1.img"
+    },
+    {
+      "file": "/home/ubuntu/app01/disk2.img",
+      "format": "vmdk",
+      "st_size": 2686976,
+      "url": "172.31.20.99:'/home/ubuntu/app01/disk2.img'",
+      "v_size": 30,
+      "volume_name": "disk2.img"
+    }
+  ]
+}
+
+创建迁移任务(Boss2CreateV2VTask)
+
+
+后端根据 zone 参数转发到对应的 V2V 服务器。
+
+{
+  "action": "Boss2CreateV2VTask",
+  "zone": "test",
+  "v2v_set": [
+    {
+      "v2v_name": "helo world",
+      "owner": "usr-kjDQQJeD",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img"
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img"
+        }
+      ]
+    }
+  ]
+}
+
+job_id	String	任务 id	
+owner	String	资源所有者	
+v2v_set	Array	v2v 任务详细信息	
+_job_id	String	
+block_bus	String	块总线	
+console_id	String	控制台 id	
+cpu	Integer	cpu 核数	
+create_time	String	任务创建时间	
+features	Integer	特性数量	
+image_id	String	镜像 id	
+instance_class	String	主机类型	
+memory	Integer	内存大小	
+nic_type	String	网卡种类	
+os_family	String	操作系统类型	
+owner	String	资源拥有者	
+passwd	String	密码	
+platform	String	运行平台	
+size	Integer		
+status	String	
+status_time	String	修改事件	
+user	String	使用者
+user_id	String	用户 id	
+v2v_id	String	v2v 资源 id	
+v2v_name	String	v2v 资源名称	
+volumes	Array	涉及的硬盘信息	
+
+
+{
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "is_os_img": true,
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img",
+          "volume_type": 0
+        },
+        {
+
+
+
+
+{
+  "action": "Boss2CreateV2VTask",
+  "zone": "test",
+  "v2v_set": [
+    {
+      "v2v_name": "helo world",
+      "owner": "usr-kjDQQJeD",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img"
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img"
+        }
+      ]
+    }
+  ]
+}
+
+
+
+{
+  "action": "Boss2CreateV2VTaskResponse",
+  "job_id": "job-0857f22b",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "_job_id": "job-0857f22b",
+      "block_bus": "hd",
+      "console_id": "alphacloud",
+      "cpu": 4,
+      "create_time": "Fri Mar 29 15:59:30 2019",
+      "features": 4,
+      "image_id": "img-k62593iq",
+      "instance_class": 0,
+      "memory": 4,
+      "nic_type": "e1000",
+      "os_family": "centos",
+      "owner": "usr-kjDQQJeD",
+      "passwd": "default",
+      "platform": "linux",
+      "size": 10,
+      "status": "new",
+      "status_time": "Fri Mar 29 15:59:30 2019",
+      "user": "root",
+      "user_id": "usr-kjDQQJeD",
+      "v2v_id": "v2v-qh6nul75",
+      "v2v_name": "helo world",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "is_os_img": true,
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img",
+          "volume_type": 0
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img",
+          "volume_type": 0
+        }
+      ]
+    }
+  ]
+}
+
+
+一键迁移(Boss2StartV2VTask)
+
+
+{
+  "action": "Boss2StartV2VTask",
+  "zone": "test",
+  "v2v_set": [
+    {
+      "v2v_id": "v2v-dv131nlm"
+    }
+  ]
+}
+
+{
+  "action": "Boss2StartV2VTaskResponse",
+  "job_id": "job-7hhmxobu",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "_job_id": "job-7hhmxobu",
+      "thread": false,
+      "v2v_id": "v2v-dv131nlm"
+    }
+  ]
+}
+
+
+
+
+删除迁移任务(Boss2DeleteV2VTask)
+
+{
+  "action": "Boss2DeleteV2VTask",
+  "zone": "test",
+  "v2v_set": [
+    {
+      "v2v_id": "v2v-bfzaswep"
+    }
+  ]
+}
+{
+  "action": "Boss2DeleteV2VTaskResponse",
+  "job_id": "job-89v3as3c",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "v2v_id": "v2v-bfzaswep"
+    }
+  ]
+}
+
+修改迁移任务(Boss2ModifyV2VTask)
+
+
+
+后端根据 zone 参数转发到对应的 V2V 服务器
+
+
+{
+  "action": "Boss2ModifyV2VTask",
+  "zone": "test", // [必须]指定zone
+  
+  "v2v_set": [
+    {
+      "v2v_id": "v2v-eomp10py",
+      "v2v_name": "helo world",
+      "owner": "usr-kjDQQJeD",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img"
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img"
+        }
+      ]
+    }
+  ]
+}
+
+{
+  "action": "Boss2ModifyV2VTask",
+  "zone": "test", // [必须]指定zone
+  
+  "v2v_set": [
+    {
+      "v2v_id": "v2v-eomp10py",
+      "v2v_name": "helo world",
+      "owner": "usr-kjDQQJeD",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img"
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img"
+        }
+      ]
+    }
+  ]
+}
+
+
+{
+  "action": "Boss2ModifyV2VTaskResponse",
+  "job_id": "job-h513k8j3",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "_job_id": "job-h513k8j3",
+      "block_bus": "hd",
+      "console_id": "alphacloud",
+      "cpu": 4,
+      "create_time": "Wed Mar 27 17:54:01 2019",
+      "features": 4,
+      "image_id": "img-8nkyjt5b",
+      "instance_class": 0,
+      "memory": 4,
+      "nic_type": "e1000",
+      "os_family": "centos",
+      "owner": "usr-kjDQQJeD",
+      "passwd": "default",
+      "platform": "linux",
+      "size": 10,
+      "status": "new",
+      "status_time": "Fri Mar 29 16:50:15 2019",
+      "user": "root",
+      "user_id": "usr-kjDQQJeD",
+      "v2v_id": "v2v-eomp10py",
+      "v2v_name": "helo world",
+      "volumes": [
+        {
+          "file": "/home/ubuntu/app01/disk1.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk1.img'\"",
+          "v_size": 10,
+          "volume_name": "disk1.img"
+        },
+        {
+          "file": "/home/ubuntu/app01/disk2.img",
+          "format": "qcow2",
+          "st_size": 197120,
+          "url": "200.1.1.101:\"'/home/ubuntu/app01/disk2.img'\"",
+          "v_size": 20,
+          "volume_name": "disk2.img"
+        }
+      ]
+    }
+  ]
+}
+
+获取迁移任务日志(Boss2DescribeV2VTaskLogs)
+
+
+后端根据 zone 参数转发到对应的 V2V 服务器。
+
+
+{
+  "action": "Boss2DescribeV2VTaskLogs",
+  "zone": "test",
+  "keyword": {
+    "resources_id": "v2v-eomp10py",
+    "job-5tpj0tbm": "job-5tpj0tbm"
+  }
+}
+
+
+owner	String	资源所有者	
+	
+job_set	Array	v2v 
+info_set	Array	信息列表	
+job_id	Array	任务 id	
+status	String	任务日志状态	
+status_time	String	上次更新时间
+
+
+
+
+{
+  "action": "Boss2DescribeV2VTaskLogsResponse",
+  "job_set": [
+    {
+      "action": "AutoMigrateV2V",
+      "create_time": "Wed Mar 27 18:56:15 2019",
+      "info_set": [
+        {
+          "info": "开始创建虚机",
+          "time": "Wed Mar 27 18:56:21 2019"
+        }
+      ],
+      "job_id": "job-m81xhoq2",
+      "owner": "boss",
+      "status": "success",
+      "status_time": "Wed Mar 27 18:56:21 2019"
+    }
+  ],
+  "owner": "boss",
+  "ret_code": 0,
+  "total_count": 1
+}
+
+{
+  "action": "Boss2DescribeV2VTaskLogs",
+  "zone": "test",
+  "keyword": {
+    "resources_id": "v2v-eomp10py",
+    "job-5tpj0tbm": "job-5tpj0tbm"
+  }
+}
+
+{
+  "action": "Boss2DescribeV2VTaskLogsResponse",
+  "job_set": [
+    {
+      "action": "AutoMigrateV2V",
+      "create_time": "Wed Mar 27 18:56:15 2019",
+      "info_set": [
+        {
+          "info": "开始创建虚机",
+          "time": "Wed Mar 27 18:56:21 2019"
+        }
+      ],
+      "job_id": "job-m81xhoq2",
+      "owner": "boss",
+      "status": "success",
+      "status_time": "Wed Mar 27 18:56:21 2019"
+    }
+  ],
+  "owner": "boss",
+  "ret_code": 0,
+  "total_count": 1
+}
+
+获取任务统计(Boss2GetV2VSummary)
+
+
+
+{
+  "action": "Boss2GetV2VSummary",
+  "zone": "test"
+}
+
+
+{
+  "action": "Boss2GetV2VSummaryResponse",
+  "owner": "boss",
+  "ret_code": 0,
+  "v2v_set": [
+    {
+      "new": 11,
+      "total_count": 12,
+      "updated": 1
+    }
+  ]
+}
+
+获取全部导航列表(Boss2DescribeNavis)
+
+
+
+获取全部导航的数据和信息，用于角色功能权限的配置。
+
+
+{
+  "action": "Boss2DescribeNavis"
+}
+
+
+
+{
+  "total_count": 1,
+  "navi_set": [
+    {
+      "id": "9af4577e-8289-4754-ab68-f74433ffebfc",
+      "navi_key": "instance",
+      "navi_name": "主机",
+      "navi_description": "显示主机列表及详情",
+      "need_zone": true,
+      "pages": [
+        {
+          "id": "06e3b8d5-4707-4628-a97b-077c0c558da2",
+          "key": "instance_list",
+          "name": "主机列表",
+          "description": "显示主机列表"
+        },
+        {
+          "id": "e62e0d64-e6c6-40c6-8104-8123b517f6b8",
+          "key": "instance_detail",
+          "name": "主机详情页",
+          "description": "显示主机详情页"
+        }
+      ],
+      "actions": [
+        {
+          "id": "16eb06d0-68e9-4ae3-9a8b-8ac8def04973",
+          "key": "instance_migrate",
+          "name": "迁移主机",
+          "description": "迁移主机按钮"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "c5599328-55c7-48ba-b807-9cfaa3acf185",
+          "key": "instance_related_resources",
+          "name": "关联资源",
+          "description": "显示主机关联的资源"
+        },
+        {
+          "id": "203fa564-e5ee-4c6e-a222-4eac0988d17d",
+          "key": "instance_monitor",
+          "name": "资源监控",
+          "description": "显示资源的监控"
+        }
+      ]
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeNavisResponse"
+}
+
+
+创建角色(Boss2CreateRole)
+
+
+
+
+用于创建BOSS2系统中的角色，将会返回角色id和角色名称。
+
+
+
+{
+    "action": "Boss2CreateRole",
+    "name": "测试角色",
+    "zones": ["test"],
+    "description": "测试角色描述",
+    "consoles": ["qingcloud"],
+    "menus":[
+    {
+        "id": "9af4577e-8289-4754-ab68-f74433ffebfc",
+        "pages": ["06e3b8d5-4707-4628-a97b-077c0c558da2", "e62e0d64-e6c6-40c6-8104-8123b517f6b8"],
+        "actions": ["16eb06d0-68e9-4ae3-9a8b-8ac8def04973"],
+        "tabs": ["c5599328-55c7-48ba-b807-9cfaa3acf185", "203fa564-e5ee-4c6e-a222-4eac0988d17d"]
+    }
+]
+}
+
+
+{
+  "id": "c885521d-4805-475b-8abb-cea443ec205a",
+  "name": "测试角色2",
+  "ret_code": 0,
+  "action": "Boss2CreateRoleResponse"
+}
+
+
+获取角色列表和详情(Boss2DescribeRoles)
+
+获取角色列表或角色详情。
+
+
+
+
+{
+    "action": "Boss2DescribeRoles",
+    "id": ["f92f9a2a-da6c-462c-ba61-46c1afd8eb7a"],
+    "name": ["测试角色"],
+    "status": ["disabled"],
+    "search_word": "测试",
+    "fields": ["id", "name", "user_count"],
+    "limit": 20,
+    "offset": 0,
+    "reverse": 1
+}
+
+id	String	
+name	String	角色名称	
+description	String	
+status	String	
+status_time	String		
+create_time	String		
+zones	Array		
+consoles	Array	
+menus	Array	
+users	Array	
+user_count	Integer	
+
+
+{
+  "total_count": 3,
+  "role_set": [
+    {
+      "id": "7dcfa680-3914-4b5c-96d7-ddd5c0f3ed0c",
+      "name": "测试角色",
+      "description": "测试角色",
+      "status": "active",
+      "status_time": "2019-04-23T08:15:18.159Z",
+      "create_time": "2019-04-22T11:32:15.681Z",
+      "zones": [
+        "test"
+      ],
+      "consoles": [
+        "qingcloud"
+      ],
+      "menus": [],
+      "users": [
+        {
+          "id": 30,
+          "email": "test2@example.com",
+          "username": "test"
+        }
+      ],
+      "user_count": 10
+    },
+    {
+      "id": "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a",
+      "name": "测试角色3",
+      "description": "测试角色",
+      "status": "disabled",
+      "status_time": "2019-04-23T08:14:58.393Z",
+      "create_time": "2019-04-22T10:23:45.951Z",
+      "zones": [],
+      "consoles": [
+        "qingcloud"
+      ],
+      "menus": null,
+      "users": [
+        {
+          "id": 8,
+          "email": "admin@yunify.com",
+          "username": ""
+        },
+        {
+          "id": 17,
+          "email": "me@knktc.com",
+          "username": ""
+        }
+      ]
+    },
+    {
+      "id": "c885521d-4805-475b-8abb-cea443ec205a",
+      "name": "测试角色2",
+      "description": "测试角色",
+      "status": "active",
+      "status_time": "2019-04-22T11:32:24.902Z",
+      "create_time": "2019-04-22T11:32:24.902Z",
+      "zones": [
+        "test"
+      ],
+      "consoles": [
+        "qingcloud"
+      ],
+      "menus": [],
+      "users": [],
+      "user_count": 0
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeRolesResponse"
+}
+
+
+修改角色信息(Boss2ModifyRoleAttributes)
+
+修改角色的信息，修改成功后ret_code为0
+
+
+{
+    "action": "Boss2ModifyRoleAttributes",
+    "zones": ["test"],
+    "id": "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a",
+    "name": "测试角色3", 
+    "description": "测试修改角色的描述",
+    "consoles": ["qingcloud"],
+    "menus": [
+    {
+        "id": "9af4577e-8289-4754-ab68-f74433ffebfc",
+        "pages": ["06e3b8d5-4707-4628-a97b-077c0c558da2", "e62e0d64-e6c6-40c6-8104-8123b517f6b8"],
+        "actions": ["16eb06d0-68e9-4ae3-9a8b-8ac8def04973"],
+        "tabs": ["c5599328-55c7-48ba-b807-9cfaa3acf185", "203fa564-e5ee-4c6e-a222-4eac0988d17d"]
+    }
+    ],
+    "status": "disabled"
+}
+
+{
+  "id": "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a",
+  "ret_code": 0,
+  "action": "Boss2ModifyRoleAttributesResponse"
+}
+
+
+
+
+
+赋予用户角色(Boss2GrantRolesToUsers)
+
+{
+    "action": "Boss2GrantRolesToUsers",
+    "roles": ["f92f9a2a-da6c-462c-ba61-46c1afd8eb7a", "7dcfa680-3914-4b5c-96d7-ddd5c0f3ed0c"],
+    "users": [35, 36, 37]
+}
+
+
+{
+  "roles": [
+    "7dcfa680-3914-4b5c-96d7-ddd5c0f3ed0c",
+    "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a"
+  ],
+  "role_count": 2,
+  "users": [
+    33,
+    35,
+    30,
+    31
+  ],
+  "user_count": 4,
+  "ret_code": 0,
+  "action": "Boss2GrantRoleToUsersResponse"
+}
+
+
+
+撤销用户角色(Boss2RevokeRolesFromUsers)
+/api/Boss2RevokeRolesFromUsers
+
+
+删除用户和角色的关联，成功后ret_code为0，并返回成功的角色和用户id列表
+
+
+{
+    "action": "Boss2RevokeRolesFromUsers",
+    "roles": ["f92f9a2a-da6c-462c-ba61-46c1afd8eb7a", "7dcfa680-3914-4b5c-96d7-ddd5c0f3ed0c"],
+    "users": [35, 36, 37],
+    "purge": true,
+}
+
+{
+  "roles": [
+    "7dcfa680-3914-4b5c-96d7-ddd5c0f3ed0c",
+    "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a"
+  ],
+  "role_count": 2,
+  "users": [
+    33,
+    35,
+    30,
+    31
+  ],
+  "user_count": 4,
+  "ret_code": 0,
+  "action": "Boss2RevokeRolesFromUsersResponse"
+}
+
+
+复制用户角色(Boss2DuplicateRole)
+
+
+复制指定id的role，复制成功后将会返回新角色的id。
+
+
+{
+    "action": "Boss2DuplicateRole",
+    "id": "f92f9a2a-da6c-462c-ba61-46c1afd8eb7a",
+    "name": "测试复制角色",
+    "description": "测试复制的角色"
+}
+
+
+
+
+{
+  "id": "d4d9ef3a-248b-4987-8b47-08fc2db25d42",
+  "name": "测试复制角色2",
+  "ret_code": 0,
+  "action": "Boss2DuplicateRoleResponse"
+}
+
+获取通知组(Boss2DescribeNotifyGroup)
+
+
+
+
+{
+	"action": "Boss2DescribeNotifyGroup",
+	"name": ["test1"],   // name 传列表，精确匹配
+	"search_word": "test",     // 
+	"offset": 0,
+	"limit": 10,
+	"fields": ["id", "name"]
+}
+
+
+
+{
+  "notify_group_set": [
+    {
+      "id": 1,
+      "name": "test1",
+      "phones": [
+        {
+          "contact": "13111112222",
+          "remark": "联通"
+        },
+        {
+          "contact": "13712345678",
+          "remark": "移动"
+        }
+      ],
+      "emails": [
+        {
+          "contact": "tomwang@yunify.com",
+          "remark": "tomwang"
+        },
+        {
+          "contact": "qingjunchi@yunify.com",
+          "remark": "invoker"
+        }
+      ],
+      "webhooks": [
+        {
+          "contact": "http://localhost:8887/webhook",
+          "remark": "测试用"
+        }
+      ],
+      "status_time": "2019-05-05T06:04:24.732Z",
+      "create_time": "2019-05-05T06:04:24.732Z",
+    }
+  ],
+  "total_count": 1,
+  "ret_code": 0,
+  "action": "Boss2DescribeNotifyGroupResponse"
+}
+
+
+
+{
+  "notify_group_set": [
+    {
+      "id": 1,
+      "name": "test1",
+      "phones": [
+        {
+          "contact": "13111112222",
+          "remark": "联通"
+        },
+        {
+          "contact": "13712345678",
+          "remark": "移动"
+        }
+      ],
+      "emails": [
+        {
+          "contact": "tomwang@yunify.com",
+          "remark": "tomwang"
+        },
+        {
+          "contact": "qingjunchi@yunify.com",
+          "remark": "invoker"
+        }
+      ],
+      "webhooks": [
+        {
+          "contact": "http://localhost:8887/webhook",
+          "remark": "测试用"
+        }
+      ],
+      "status_time": "2019-05-05T06:04:24.732Z",
+      "create_time": "2019-05-05T06:04:24.732Z",
+    }
+  ],
+  "total_count": 1,
+  "ret_code": 0,
+  "action": "Boss2DescribeNotifyGroupResponse"
+}
+
+
+创建通知组(Boss2CreateNotifyGroup)
+
+{
+  "action": "Boss2CreateNotifyGroup",
+  "name": "test1",
+  "phones": [
+    {
+      "contact": "13111112222",
+      "remark": "联通"
+    },
+    {
+      "contact": "13712345678",
+      "remark": "移动"
+    }
+  ],
+  "emails": [
+    {
+      "contact": "qingjunchi@yunify.com",
+      "remark": "invoker"
+    },
+    {
+      "contact": "tomwang@yunify.com",
+      "remark": "tomwang"
+    }
+  ],
+  "webhooks": [
+    {
+      "contact": "http://localhost:8887/webhook",
+      "remark": "测试用"
+    }
+  ]
+}
+
+{
+  "id": 1,
+  "ret_code": 0,
+  "action": "Boss2CreateNotifyGroupResponse"
+}
+
+
+修改通知组(Boss2ModifyNotifyGroup)
+
+
+{
+  "action": "Boss2ModifyNotifyGroup",
+  "id": 1,
+  "emails": [
+    {
+      "contact": "qingjunchi@yunify.com",
+      "remark": "invoker"
+    }
+  ]
+}
+
+{
+  "action": "Boss2ModifyNotifyGroup",
+  "id": 1,
+  "emails": [
+    {
+      "contact": "qingjunchi@yunify.com",
+      "remark": "invoker"
+    }
+  ]
+}
+
+{
+  "id": 1,
+  "ret_code": 0,
+  "action": "Boss2ModifyNotifyGroupResponse"
+}
+
+
+删除通知组(Boss2DeleteNotifyGroup)
+
+
+{
+  "action": "Boss2DeleteNotifyGroup",
+  "id": 1
+}
+
+{
+  "ret_code": 0,
+  "action": "Boss2DeleteNotifyGroupResponse"
+}
+
+
+修改审查项目(Boss2ModifyAuditActionAttributes
+审核操作日志。
+
+{
+    "action": "Boss2ModifyAuditActionAttributes",
+    "id": ["Ping"],
+    "status": "enabled",
+    "sensitive_fields": ["users"],
+    "remarks": "测试备注"
+}
+
+
+{
+  "success": 1,
+  "audit_actions": [
+    "Ping"
+  ],
+  "ret_code": 0,
+  "action": "Boss2ModifyAuditActionAttributesResponse"
+}
+
+获取审查项目列表/详情(Boss2DescribeAuditActions)
+
+获取审查项目的列表或详情。
+
+{
+  "action": "Boss2DescribeAuditActions",
+  "limit": 1,
+  "offset": 0,
+  "sort_key": "status_time",
+  "reverse": 1,
+  "search_word": "测试",
+  "fields": ["api", "api_category"],
+  "api": ["DescribeInstances"],
+  "api_category": [0, 1],
+  "status": ["enabled"] 
+}
+
+
+api	String	
+api_name	String	
+api_description	String	
+api_category	Integer	
+api_category_name	String	
+remarks	String	
+sensitive_fields	Array		
+status_time	String	修改时间	
+status	String	审查项目状态：
+enabled: 启用
+disabled: 禁用
+
+audit_action_set
+
+
+{
+  "total_count": 2,
+  "audit_action_set": [
+    {
+      "api": "Ping",
+      "api_name": "测试API",
+      "api_description": "用于测试的api",
+      "api_category": 0,
+      "api_category_name": "查询",
+      "remarks": "",
+      "sensitive_fields": [
+        "users"
+      ],
+      "status_time": "2019-04-30T01:29:54.819Z",
+      "status": "enabled"
+    },
+    {
+      "api": "DescribeInstances",
+      "api_name": "获取主机列表",
+      "api_description": "获取主机的列表",
+      "api_category": 0,
+      "api_category_name": "查询",
+      "remarks": "获取主机列表",
+      "sensitive_fields": [],
+      "status_time": "2019-04-30T01:29:48.513Z",
+      "status": "disabled"
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeAuditActionsResponse"
+}
+
+
+获取审查日志列表/详情(Boss2DescribeAuditLogs)
+
+查询审查日志列表或详情。
+
+
+
+{
+  "action": "Boss2DescribeAuditLogs",
+  "limit": 1,
+  "offset": 0,
+  "sort_key": "status_time",
+  "reverse": 1,
+  "search_word": "测试",
+  "fields": ["id", "operator"],
+  "id": [1, 2, 3], 
+  "operator": [1, 2, 3],
+  "checked": ["checked"],
+  "api": ["DescribeInstances"],
+  "api_category": [0, 1],
+  "operator_ip": ["127.0.0.1"],
+  "zone": "test",
+  "zones": ["test"],
+  "consoles": ["qingcloud"],
+  "resources": ["usr-ijjifec"],
+  "owners": ["usr-jijefe"],
+  "audit_passed": ["passed", "unpassed"],
+  "audit_status": ["abnormal"],
+  "action_time_start": "2019-04-23T08:15:18.159Z",
+  "action_time_end": "2019-04-23T08:15:18.159Z", 
+  "audit_time_start": "2019-04-23T08:15:18.159Z",
+  "audit_time_end": "2019-04-23T08:15:18.159Z" 
+}
+
+
+{
+  "total_count": 49278,
+  "audit_log_set": [
+    {
+      "id": 49278,
+      "api": "Boss2GetDashboardStats",
+      "api_name": "获取总览统计",
+      "api_category": 0,
+      "api_category_name": "查询",
+      "api_description": "获取总览的统计数据",
+      "operator_id": 3,
+      "operator_email": "admin@alphacloud.com",
+      "operator_name": "admin",
+      "operator_ip": "127.0.0.1",
+      "operator_ua": "axios/0.18.0",
+      "params": "{\"shunt\": \"default\", \"action\": \"Boss2GetDashboardStats\", \"topic\": [\"instance_status\", \"volume_status\", \"eip_status\"], \"zone\": \"test\"}",
+      "zones": [
+        "test"
+      ],
+      "consoles": [],
+      "resources": [
+        "instance_status",
+        "volume_status",
+        "eip_status"
+      ],
+      "action_time": "2019-05-12T08:56:11.367Z",
+      "owners": [],
+      "audit_status": "abnormal",
+      "review_log": "",
+      "checked": "unchecked",
+      "audit_passed": "passed",
+      "audit_log": null,
+      "auditor_id": null,
+      "auditor_name": null,
+      "auditor_email": null,
+      "audit_time": null
+    },
+    {
+      "id": 49277,
+      "api": "Boss2GetDashboardStats",
+      "api_name": "获取总览统计",
+      "api_category": 0,
+      "api_category_name": "查询",
+      "api_description": "获取总览的统计数据",
+      "operator_id": 3,
+      "operator_email": "admin@alphacloud.com",
+      "operator_name": "admin",
+      "operator_ip": "127.0.0.1",
+      "operator_ua": "axios/0.18.0",
+      "params": "{\"shunt\": \"default\", \"action\": \"Boss2GetDashboardStats\", \"topic\": [\"hypernode_physical_usage\", \"snapshot_usage\", \"virtual_usage\"], \"zone\": \"test\"}",
+      "zones": [
+        "test"
+      ],
+      "consoles": [],
+      "resources": [
+        "hypernode_physical_usage",
+        "snapshot_usage",
+        "virtual_usage"
+      ],
+      "action_time": "2019-05-12T08:56:11.367Z",
+      "owners": [],
+      "audit_status": null,
+      "review_log": null,
+      "checked": "unchecked",
+      "audit_passed": null,
+      "audit_log": null,
+      "auditor_id": null,
+      "auditor_name": null,
+      "auditor_email": null,
+      "audit_time": null
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeAuditLogsResponse"
+}
+
+
+
+审核操作日志(Boss2ModifyAuditLogAttributes)
+
+审核操作日志。
+
+
+{
+    "action": "Boss2ModifyAuditLogAttributes",
+    "id": [1,2,3,4,5,6],
+    "audit_status": "normal",
+    "audit_passed": "passed",
+    "review_log": "测试审核"
+}
+{
+  "success": 2,
+  "audit_logs": [
+    1,
+    2
+  ],
+  "ret_code": 0,
+  "action": "Boss2ModifyAuditLogAttributesResponse"
+}
+
+获取过滤参数(Boss2GetFilterFields)
+
+
+该接口从后端为前端提供列表中的过滤项目。
+
+
+{
+    "action": "Boss2GetFilterFields",
+    "filters": ["service_roles"] //
+}
+
+
+service_roles	在“服务进程”列表中提供服务角色的过滤字段	
+alert_level	对应告警记录列表中的“级别”	
+alert_type	
+node_type		
+notify_policy		
+notify_recipient		
+alert_event_status	
+mgmt_node_status	
+mgmt_node_type	
+image_status	
+image_platform	
+api_category	
+
+
+{
+  "filters": {
+    "service_roles": [
+      {
+        "id": "账号服务",
+        "name": "账号服务"
+      },
+      {
+        "id": "BOSS服务",
+        "name": "BOSS服务"
+      },
+      {
+        "id": "定时器服务",
+        "name": "定时器服务"
+      },
+      {
+        "id": "域名服务",
+        "name": "域名服务"
+      },
+      {
+        "id": "身份认证服务",
+        "name": "身份认证服务"
+      },
+      {
+        "id": "资源编排服务",
+        "name": "资源编排服务"
+      },
+      {
+        "id": "自动伸缩服务",
+        "name": "自动伸缩服务"
+      },
+      {
+        "id": "告警服务",
+        "name": "告警服务"
+      },
+      {
+        "id": "通知服务",
+        "name": "通知服务"
+      },
+      {
+        "id": "网关服务",
+        "name": "网关服务"
+      },
+      {
+        "id": "核心管理服务",
+        "name": "核心管理服务"
+      },
+      {
+        "id": "消息推送服务",
+        "name": "消息推送服务"
+      },
+      {
+        "id": "监控服务",
+        "name": "监控服务"
+      },
+      {
+        "id": "网络服务",
+        "name": "网络服务"
+      },
+      {
+        "id": "计算服务",
+        "name": "计算服务"
+      },
+      {
+        "id": "计费服务",
+        "name": "计费服务"
+      },
+      {
+        "id": "存储服务",
+        "name": "存储服务"
+      }
+    ]
+  },
+  "ret_code": 0,
+  "action": "Boss2GetFilterFieldsResponse"
+}
+
+
+
+获取region_zone列表(Boss2DescribeZones)
+
+返回region和zone列表，用于界面展示使用。
+如果没有启用region，则该zone对应的region为空字符串
+
+
+{
+  "action": "Boss2DescribeZones",
+  "all": false 
+}
+
+zone_set	Array	可用区信息列表	
+zone_id	String	可用区 id	
+region_id	String	region id	
+
+
+
+
+{
+  "zone_set": [
+    {
+      "zone_id": "devopsa",
+      "region_id": "devops"
+    },
+    {
+      "zone_id": "devopsb",
+      "region_id": "devops"
+    },
+    {
+      "zone_id": "test",
+      "region_id": ""
+    }
+  ],
+  "ret_code": 0,
+  "action": "Boss2DescribeZonesResponse"
+}
+
+
+修改用户安全选项(ModifyUserSecuritySetting)
+
+
+
+此为iaas接口，用于修改用户的安全选项，如：关闭用户的二次认证等。
+
+deactive_key: 1
+enable_2fa: 0
+
+
+关闭二次认证的时候同时把老的key禁用
+
+
+{
+	"action": "ModifyUserSecuritySetting",
+	"user": "usr-0vrOT3Oo",
+	"deactivate_key": 1,
+	"enable_2fa": 0
+}
+
+{
+  "action": "ModifyUserSecuritySettingResponse",
+  "user_id": "usr-0vrOT3Oo",
+  "ret_code": 0
+}
+
+
+
+
+获取在线命令列表(Boss2DescribeCmds)
+
+{
+  "action": "Boss2DescribeCmds",
+  "zone": "test" // 指定zone
+}
+
+
+{
+  "action": "Boss2DescribeCmds",
+  "total_count": 55,
+  "cmd_map": {
+    "agent-ip-r": {
+      "command": "safe-guest-sh {instance} 'ip r'",
+      "name": "查看虚拟机路由信息"
+    },
+    "ip-a": {
+      "command": "ip a",
+      "name": "查看IP地址"
+    }
+  },
+  "ret_code": 0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Cookie: boss2_sk=jj1re9b84yix2w14g95xm0frazopkv0g

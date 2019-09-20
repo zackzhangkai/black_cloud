@@ -9,6 +9,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, HttpResponse, redirect
 from apps.operation_app.utils.processor import get_hashed_name
 from apps.operation_app.models import FilesRecorder, SharingRecorder
+from storage.qingstor_package import (
+    new_bucket, put, get, delete, list
+)
 
 # Create your views here.
 
@@ -40,10 +43,10 @@ def handle_uploading_file(request):
     filename = upload_file.__dict__.get('_name')
 
     # get the unique hashed filename
-    hashed_name = get_hashed_name(upload_file)
+    # hashed_name = get_hashed_name(upload_file)
 
     # modify the storage name to hashed filename
-    upload_file.__dict__['_name'] = hashed_name
+    # upload_file.__dict__['_name'] = hashed_name
     size = upload_file.__dict__.get('size')
 
     # file is measured in byte
@@ -52,15 +55,22 @@ def handle_uploading_file(request):
     size = str(round(size/1000, 2))+'KB' if size < 1000000 else str(round(size/1000000, 2)) + 'MB'
 
     # check if duplicated
-    if FilesRecorder.objects.filter(file_path=hashed_name):
-        # the key for not saving the existed file again
-        logging.info(f"uploading-existed-file: {hashed_name}")
-        upload_file = str(upload_file)
+    # if FilesRecorder.objects.filter(file_path=filename):
+    #     # the key for not saving the existed file again
+    #     logging.info(f"uploading-existed-file: {filename}")
+    #     upload_file = str(upload_file)
     # print(upload_file, type(upload_file), '+++++++')
     # insert into database
     FilesRecorder.objects.create(user=current_user, file_path=upload_file,
                                  content_type=content_type, file_type=file_type,
-                                 size=size, file_name=filename, hashed_name=hashed_name)
+                                 size=size, file_name=filename, hashed_name=filename)
+    import sys
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    print(cwd)
+    cwd = '/'.join(cwd.split('/')[:-2])+'/storage/'
+    with open(cwd + filename, 'rb') as f:
+        put(filename, f)
+
     return HttpResponse('upload-success')
 
 
