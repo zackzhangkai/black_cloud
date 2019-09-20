@@ -1,10 +1,14 @@
 import logging
 from django.contrib import auth
 from django.contrib.auth.models import User
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 
 # Create your views here.
 
+
+def login_front_gate(request):
+    """转发"""
+    return redirect('account/login')
 
 def login(request):
     """显示登录页面"""
