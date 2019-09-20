@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>NetStore</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <style>
+        body, html {
+            height: 100%;
+            display: grid;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="width: 60%; margin: auto; text-align: center">
+        <a href="{% url 'accounts_app:show_login_page' %}">
+        <div class="alert alert-success" role="alert">
+            注册成功，点击去登录，
+            <span id="seconds_counter">5</span>秒后自动返回
+        </div>
+        </a>
+    </div>
+
+
+    <script type="text/javascript">
+
+        onload = function(){
+
+            seconds_counter = document.getElementById('seconds_counter');
+
+            function tiktok() {
+                now = parseInt(seconds_counter.innerText);
+                if(now==0){
+                    location.replace("{% url 'accounts_app:show_login_page' %}")
+                }else{
+                    now -= 1;
+                    seconds_counter.innerText = now;
+                }
+            }
+            setInterval(tiktok, 1000);
+            };
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>NetStore</title>
+    <script type="text/javascript" src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <style>
+        body, html {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div style="margin: auto; height: 100%; background-color: rgb(238, 238, 238);">
+<div style="width: 400px; margin:0 auto; padding-left: 20px; padding-right: 20px;">
+    <div style="height: 40px;"></div>
+    <h3 style="text-align: center">注册 NetStore</h3>
+    <form action="{% url 'accounts_app:new_account' %}" method="post"
+          onsubmit="return waiting_check_pwd();">
+        {% csrf_token %}
+      <div class="form-group">
+        <label for="username">  </label>
+        <input type="text" class="form-control" id="username" aria-describedby="emailHelp"
+               name="username" placeholder="用户名" onblur="if_username_exist(this.value)">
+          <div style="height: 10px;text-align: center;padding-top: 10px">
+          <div id="existed_username_hinter" style="color: red; display: none;">用户名已存在！</div>
+            <div id="right_username_hinter" style="color: green; display: none;">该用户名可用</div>
+              <div id="empty_username_hinter" style="color: mediumvioletred; display: none;">用户名不能为空</div>
+          </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">  </label>
+        <input type="password" class="form-control" id="pwd1" name="password"
+               placeholder="密码">
+      </div>
+        <div class="form-group">
+        <label for="re_password">  </label>
+        <input type="password" class="form-control" id="pwd2" name="re_password"
+               placeholder="再次确认密码" onblur="if_pwd_consistent();">
+            <div style="height: 10px;text-align: center;padding-top: 10px">
+            <div id="not_consistent_hinter" style="color: red; display: none;">两次输入的密码不一致</div>
+            <div id="consistent_hinter" style="color: green; display: none;">正确</div>
+            </div>
+      </div>
+        <div class="form-group">
+        <label for="email">  </label>
+        <input type="email" class="form-control" name="email" placeholder="邮箱">
+      </div>
+        <div style="height: 30px;"></div>
+      <button type="submit" class="btn btn-primary" onclick="waiting_check_pwd()"
+              style="width: 360px;">注册</button>
+    </form>
+</div>
+    <div style="height: 70px;"></div>
+</div>
+
+
+{#    <form id="user_form" action="{% url 'accounts_app:new_account' %}"#}
+{#          method="post" onsubmit="return waiting_check_pwd();">#}
+{#        {% csrf_token %}#}
+{#        <div>#}
+{#            <input type="text" placeholder="用户名" name="username"#}
+{#                   id="username" onblur="if_username_exist(this.value)">&nbsp;&nbsp;#}
+{#            <div id="existed_username_hinter" style="color: red; display: none;">用户名已存在！</div>#}
+{#            <div id="right_username_hinter" style="color: green; display: none;">该用户名可用</div>#}
+{#            <div id="empty_username_hinter" style="color: mediumvioletred; display: none;">用户名不能为空</div>#}
+{#        </div>#}
+{#        <div>#}
+{#            <input id="pwd1" type="password" placeholder="密码" name="password">#}
+{#        </div>#}
+{#        <div>#}
+{#            <input id="pwd2" type="password" placeholder="确认密码" name="re_password"#}
+{#                   onblur="if_pwd_consistent();">&nbsp;&nbsp;#}
+{#            <div id="not_consistent_hinter" style="color: red; display: none;">两次输入的密码不一致</div>#}
+{##}
+{#        </div>#}
+{#        <div>#}
+{#            <input type="email" placeholder="邮箱" name="email">#}
+{#        </div>#}
+{#        <button type="submit" onclick="waiting_check_pwd()">提交</button>#}
+{#    </form>#}
+
+    <script type="text/javascript">
+
+        username_flag = false;
+
+        function if_username_exist(username) {
+            if(!username){
+                username_flag = false;
+                $('#existed_username_hinter').css('display', 'none');
+                $('#right_username_hinter').css('display', 'none');
+                $('#empty_username_hinter').css('display', 'inline');
+                return;
+            }
+            console.log(username);
+            $.get(
+                "{% url 'accounts_app:if_username_existed' %}?username="+username,
+                function (resp_text) {
+                    console.log(resp_text);
+                    if(resp_text == 'not-existed'){
+                        username_flag = true;
+                        $('#existed_username_hinter').css('display', 'none');
+                        $('#empty_username_hinter').css('display', 'none');
+                        $('#right_username_hinter').css('display', 'inline');
+                    }else{
+                        console.log('已存在');
+                        $('#right_username_hinter').css('display', 'none');
+                        $('#empty_username_hinter').css('display', 'none');
+                        $('#existed_username_hinter').css('display', 'inline');
+                    }
+                }
+            )
+        }
+
+
+        function waiting_check_pwd() {
+            console.log('waiting');
+            var pwd1 = document.getElementById('pwd1');
+            var pwd2 = document.getElementById('pwd2');
+            // 此处有必要再次确认
+            if(pwd1.value == pwd2.value){
+                console.log(username_flag);
+                if(username_flag){
+                    var form = document.getElementById('user_form');
+                    console.log('pwd1==pwd2');
+                    {#form = document.getElementById('user_form');#}
+                    {#form.submit();#}
+                    return true;
+                }else{
+                    window.alert('用户名已注册，请使用其他用户名！');
+                    return false;
+                }
+            }else{
+                window.alert('两次输入的密码不一致，请重新输入！');
+                pwd1.value = '';
+                pwd2.value = '';
+                $('#not_consistent_hinter').css('display', 'none');
+                return false;
+
+            }
+        }
+
+        function if_pwd_consistent() {
+            var pwd1 = document.getElementById('pwd1').value;
+            var pwd2 = document.getElementById('pwd2').value;
+            if(pwd1!=pwd2){
+                $('#consistent_hinter').css('display', 'none');
+                $('#not_consistent_hinter').css('display', 'inline');
+            }else{
+                 $('#not_consistent_hinter').css('display', 'none');
+                $('#consistent_hinter').css('display', 'inline');
+            }
+        }
+        
+    </script>
+</body>
+</html>

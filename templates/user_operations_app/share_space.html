@@ -1,0 +1,107 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+    <div style="width: 90%; margin: 0 auto;">
+    <div style="height: 40px;"></div>
+    <h3 style="float: left">分享空间</h3>
+
+    <div style="float: right; ">
+        <nav aria-label="Page navigation example">
+          <ul class="pagination">
+          {% if page.has_previous %}
+            <li class="page-item"><a class="page-link" href="#">上一页</a></li>
+          {% endif %}
+              {% for i in page.paginator.page_range %}
+            <li class="page-item"><a class="page-link" href="#">{{ i }}</a></li>
+              {% endfor %}
+          {% if page.has_next %}
+            <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+          {% endif %}
+          </ul>
+        </nav>
+    </div>
+    </div>
+
+
+    <div style="width: 90%; margin: 10px auto;">
+        <table class="table table-striped" style="text-align: center; ">
+          <thead>
+            <tr>
+              <th></th>
+              <th scope="col">文件名</th>
+              <th scope="col">文件大小</th>
+              <th scope="col">类型</th>
+              <th scope="col">文件拥有者</th>
+              <th scope="col">文件分享者</th>
+              <th scope="col">分享时间</th>
+              <th scope="col">有效期</th>
+              <th scope="col">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for file in page.object_list %}
+                {% if not file.was_deleted %}
+
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ file.file.file_name }}</td>
+                    <td>{{ file.file.size }}</td>
+                    <td>{{ file.file.file_type }}</td>
+                    <td>{{ file.owner }}</td>
+                    <td>{{ file.sharer}}</td>
+                    <td>{{ file.sharing_time }}</td>
+                    <td>{{ file.expiry}}</td>
+                    <td>
+                        <a href="javascript:download_this('{{ file.file.file_name }}', '{{ file.file.hashed_name }}','{{ file.file_type }}');">下载</a>
+                        <a href="javascript:delete_this_sharing('{{ file.id }}')">移除</a>
+                        {% if not file.is_private_sharing %}
+                            <a href="javascript:share_this_file('{{ file.file.hashed_name }}');">转分享</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        function download_this(file_name, hashed_name, file_type) {
+            location.href = "{% url 'operation_app:download_file' %}?file_name="
+                + file_name + '&hashed_name=' + hashed_name + '&file_type=' + file_type;
+        }
+
+        function delete_this_sharing(record_id) {
+            console.log('deleting');
+            im_confirm = window.confirm('确认要将该文件从自己的分享空间中移除吗？\n移除后将不能恢复');
+            if(im_confirm){
+
+                $.ajax({
+                   url: "{% url 'operation_app:delete_this_sharing' %}",
+                   type: "get",
+                   data: "record_id="+record_id,
+                   success: function (resp_text) {
+                       if(resp_text=='delete-success'){
+                           location.reload();
+                       }
+                   }
+                });
+            }
+        }
+
+
+        function share_this_file(hashed_name) {
+            {#receiver = prompt('请输入接收者的用户名');#}
+            $('#hashed-name-hidden').val(hashed_name);
+            show_share_info_box(hashed_name);
+        }
+
+        function logout() {
+            location.replace("{% url 'accounts_app:logout' %}")
+        }
+
+
+    </script>
+
+{% endblock %}

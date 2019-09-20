@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>NetStore</title>
+    <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+    <style>
+        body, html {
+          height: 100%;
+          display: grid;
+        }
+    </style>
+</head>
+<body>
+<div class="shadow" style="position: relative; top: -10%;margin: auto; border-radius:40px; background-color: rgb(238, 238, 238);">
+<div style="width: 400px; margin:0 auto; padding-left: 20px; padding-right: 20px;">
+    <div style="height: 40px;"></div>
+    <h3 style="text-align: center;">登录 NetStore</h3>
+    <form>
+      <div class="form-group">
+        <label for="username">  </label>
+        <input type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="用户名">
+      </div>
+        <div style="height: 10px;"></div>
+      <div class="form-group">
+        <label for="password">  </label>
+        <input type="password" class="form-control" id="password" placeholder="密码">
+      </div>
+        <div style="height: 30px;"></div>
+      <button type="button" class="btn btn-primary" onclick="waiting_check_user()" style="width: 150px">登录</button>
+        <div style="display: inline-block; width: 50px;"></div>
+      <button type="button" class="btn btn-primary" onclick="go_register()" style="width: 150px">注册</button>
+    </form>
+</div>
+    <div style="height: 70px;"></div>
+</div>
+
+
+
+{##}
+{#    <form id="user_form">#}
+{#        <input id="username" type="text" placeholder="用户名" name="username">#}
+{#        <br>#}
+{#        <input id="password" type="password" placeholder="密码" name="password">#}
+{#        <br>#}
+{#        <button type="button" onclick="waiting_check_user()">登录</button>#}
+{#        <button type="button" onclick="go_register()">注册</button>#}
+{#    </form>#}
+
+    <script>
+        function go_register() {
+            location.href = "{% url 'accounts_app:show_register_page' %}"
+        }
+
+        function waiting_check_user() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var xhr;
+            if(window.ActiveXObject){
+                //IE内核
+                xhr=new ActiveXObject("Microsoft.XMLHTTP");
+            }else if(window.XMLHttpRequest){
+                //Web内核 或 IE7+
+                xhr=new XMLHttpRequest();
+            };
+            xhr.open('post', "{% url 'accounts_app:check_user' %}");
+            var csrf_token = "{{ csrf_token }}";
+            xhr.setRequestHeader('X-CSRFToken', csrf_token);
+            xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+            xhr.send('username='+username+'&password='+password);
+            xhr.onreadystatechange = function () {
+                if(xhr.readyState==4 && xhr.status==200){
+                    var resp_text = xhr.responseText;
+                    if(resp_text == 'right-user'){
+                        location.replace("{% url 'operation_app:operation_board' %}");
+                    }else if(resp_text == 'wrong-user'){
+                        window.alert('用户名或密码错误！');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
