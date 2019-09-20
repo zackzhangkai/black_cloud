@@ -92,7 +92,7 @@ def delete_file_from_user_space(request):
 
 @login_required
 def share_space(request):
-    """显示分享空间页面"""
+    """显示云簇页面"""
     user_id = request.user.id
     current_page = 1 if not request.GET.get('current_page') else request.GET.get('current_page')
     share_files = SharingRecorder.objects.filter(receiver=user_id,

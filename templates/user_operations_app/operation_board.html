@@ -3,7 +3,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8" lang="">
-    <title>NetStore</title>
+    <title>BlackCloud</title>
     <script type="text/javascript" src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/bootstrap.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/bootstrap-datetimepicker.min.js' %}"></script>
@@ -34,7 +34,7 @@
 
 
 <nav class="navbar navbar-expand-lg navbar-light bg-primary" style="background-color: #e3f2fd;">
-  <a class="navbar-brand" href="#" style="color: whitesmoke; margin-left: 16px;font-weight: bold;">NetStore</a>
+  <a class="navbar-brand" href="#" style="color: whitesmoke; margin-left: 16px;font-weight: bold;">BlackCloud</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -43,12 +43,12 @@
       <li class="nav-item active">
         <a class="nav-link" href="{% url 'operation_app:operation_board' %}"
            style="color: whitesmoke;font-weight: lighter;">
-            我的云盘<span class="sr-only"></span>
+            学习平台<span class="sr-only"></span>
         </a>
       </li>
         <span class="brick" style="width: 10px;"></span>
       <li class="nav-item active">
-        <a class="nav-link" href="{% url 'operation_app:share_space' %}" style="color: whitesmoke;font-weight: lighter;">分享空间<span class="sr-only"></span></a>
+        <a class="nav-link" href="{% url 'operation_app:share_space' %}" style="color: whitesmoke;font-weight: lighter;">云簇<span class="sr-only"></span></a>
       </li>
     </ul>
         <span >
@@ -73,7 +73,7 @@
 <form action="">
 <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <span class="input-group-text" id="inputGroupFileAddon01" onclick="upload();">上传到我的空间</span>
+    <span class="input-group-text" id="inputGroupFileAddon01" onclick="upload();">UPLOAD</span>
   </div>
   <div class="custom-file">
     <input type="file" class="custom-file-input" aria-describedby="inputGroupFileAddon01"
@@ -163,7 +163,7 @@
     </script>
 
     <div style="width: 90%; margin: 0 auto;">
-    <h3 style="float: left">我的云盘</h3>
+    <h3 style="float: left">资源列表</h3>
 
     <div style="float: right; ">
         <nav aria-label="Page navigation example">
@@ -212,6 +212,7 @@
                     <td>{{ file.file_type }}</td>
                     <td>{{ file.upload_date }}</td>
                     <td>
+                        <a href="javascript:download_this('{{ file.file_name }}', '{{ file.hashed_name }}','{{ file.file_type }}');">查看</a>
                         <a href="javascript:download_this('{{ file.file_name }}', '{{ file.hashed_name }}','{{ file.file_type }}');">下载</a>
                         <a href="javascript:delete_this_file('{{ user.id }}', '{{ file.id }}')">删除</a>
                         <a  href="javascript:share_this_file('{{ file.hashed_name }}');">分享</a>
@@ -260,7 +261,7 @@
         }
         
         function delete_this_file(user_id, file_id) {
-            im_confirm = window.confirm('确认要将该文件从自己的云盘中删除吗？');
+            im_confirm = window.confirm('确认要将该文件从自己的BlackCloud中删除吗？');
             if(im_confirm){
                 location.href = "{% url 'operation_app:delete_file_from_user_space' %}?file_id="
                 + file_id + '&user_id=' + user_id;
