@@ -25,7 +25,12 @@ class Comment(models.Model):
 class StarUser(models.Model):
     """用户点赞关系表"""
     id = models.AutoField(primary_key=True)
-    user_id = models.IntegerField()
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
     community_id = models.IntegerField()
 
 
+class UserScore(models.Model):
+    """用户积分表"""
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)

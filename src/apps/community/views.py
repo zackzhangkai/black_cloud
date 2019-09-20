@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.contrib.auth.decorators import login_required
-from apps.community.models import Topic, Comment, StarUser
+from apps.community.models import Topic, Comment, StarUser, UserScore
 from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage
@@ -41,6 +41,7 @@ def create_topic(request):
     article = request.POST.get('article')
     title = request.POST.get('title')
     Topic.objects.create(user=user, article=article, title=title)
+    update_score(user, 10)
     return HttpResponse('create-success')
 
 
@@ -51,13 +52,13 @@ def create_comment(request):
     comment = request.POST.get('comment')
     topic_id = request.POST.get('topic_id')
     Comment.objects.create(user=user, comment=comment, topic_id=topic_id)
+    update_score(user, 5)
     return HttpResponse('create-success')
 
 
 @login_required
 def create_star(request):
     """点赞"""
-    uid = request.user.id
     community_id = request.POST.get('community_id')
     is_topic = request.POST.get('is_topic')
     if is_topic:
@@ -67,7 +68,8 @@ def create_star(request):
         comment = Comment.objects.get(id=community_id)
         comment.star.update(star=F('star') + 1)
 
-    StarUser.objects.create(user_id=uid, community_id=community_id)
+    StarUser.objects.create(user=request.user, community_id=community_id)
+    update_score(request.user, 1)
     return HttpResponse('star-success')
 
 
@@ -87,3 +89,17 @@ def delete_comment(request):
     u = Topic.objects.get(id=topic_id, user=user)
     u.delete()
     return HttpResponse('delete-success')
+
+
+@login_required
+def leaderboard(request):
+    leaders = UserScore.objects.filter().order_by("score")[:10]
+    return leaders
+
+
+def update_score(user, score):
+    user_score = UserScore.objects.filter(user=user)
+    if user_score.exists():
+        UserScore.score.update(star=F('score') + score)
+    else:
+        UserScore.objects.create(user=user, score=score)
