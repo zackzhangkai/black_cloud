@@ -106,3 +106,6 @@
 2019-09-20 17:46:40,246 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 13599
 2019-09-20 17:46:45,882 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 13599
 2019-09-20 17:47:41,584 basehttp.log_message 154 INFO    => "GET /operation/operation_board/ HTTP/1.1" 200 19080
+2019-09-20 19:12:16,780 basehttp.log_message 154 INFO    => "GET / HTTP/1.1" 302 0
+2019-09-20 19:12:16,947 basehttp.log_message 154 INFO    => "GET /account/login/ HTTP/1.1" 200 2872
+2019-09-20 19:12:17,098 basehttp.log_message 154 INFO    => "GET /static/css/bootstrap.css HTTP/1.1" 304 0
