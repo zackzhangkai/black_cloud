@@ -18,7 +18,7 @@ def operation_board(request):
     """返回用户操作页面,并显示当前用户已上传的所有文件"""
     uid = request.user.id
     current_page = 1 if not request.GET.get('current_page') else request.GET.get('current_page')
-    holder = FilesRecorder.objects.filter(user_id=uid, was_in_trashbin=False)
+    holder = FilesRecorder.objects.filter(was_in_trashbin=False)
     paginator = Paginator(object_list=holder, per_page=10)
     try:
         page = paginator.page(current_page)
