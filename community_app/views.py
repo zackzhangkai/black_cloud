@@ -33,7 +33,7 @@ def show_comments(request):
         article = request.POST.get("article")
         models.Topic.objects.create(user=user, title=title, article=article)
         t_objs = models.Topic.objects.all()
-        return render(request, 'community_app/show_comments.html',
+        return render(request, 'community_app/topic_list.html',
                       context={
                           't_objs': t_objs
                       }
