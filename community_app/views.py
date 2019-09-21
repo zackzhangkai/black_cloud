@@ -19,7 +19,7 @@ def show_topics(request):
                           't_objs': t_objs
                       })
     else:
-        t_objs = Topic.objects.all()
+        t_objs = Topic.objects.all().order_by('-date')
         return render(request, 'community_app/topic_list.html',
                   context={
                       't_objs': t_objs
@@ -40,7 +40,7 @@ def comments(request):
                       }
         )
     else:
-        t_objs = Topic.objects.all()
+        t_objs = Topic.objects.all().order_by('-date')
         return render(request, 'community_app/comments.html',
                   context={
                       't_objs': t_objs
