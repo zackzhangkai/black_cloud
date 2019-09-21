@@ -1,0 +1,89 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+<div style="height: 50px;"></div>
+
+<div style="width: 90%; margin: 10px auto;">
+        <table class="table table-striped" style="text-align: center; ">
+          <thead>
+            <tr>
+              <th>称号</th>
+              <th scope="col">对比条</th>
+              <th scope="col">数量</th>
+              <th scope="col">级别</th>
+            </tr>
+          </thead>
+          <tbody>
+
+
+            <tr>
+                <td>夜空亮星</td>
+                <td width="200px"><div style="background: #005cbf;
+                width: {{ ykl }}px;
+                height: 20px"></div></td>
+                <td>{{ yk }}</td>
+                <td>{{ ykd }}</td>
+            </tr>
+
+            <tr>
+                <td>知无不言</td>
+                <td><div style="background: #6f42c1;
+                width: {{ zwl }}px;
+                height: 20px"></div></td>
+                <td>{{ zw }}</td>
+                <td>{{ zwd }}</td>
+            </tr>
+
+              <tr>
+                    <td>乐于交流</td>
+                    <td><div style="background: #6DDCBD;
+                    width: 20px;
+                    height: 20px"></div></td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+
+              <tr>
+                <td>火炬之光</td>
+                <td><div style="background: #34ce57;
+                    width: {{ hjl }}px;
+                    height: 20px"></div></td>
+                <td>{{ hj }}</td>
+                <td>{{ hjd }}</td>
+              </tr>
+
+            <tr>
+                <td>好奇宝宝</td>
+                <td><div style="background: #a71d2a;
+                    width: 20px;
+                    height: 20px"></div></td>
+                <td>0</td>
+                <td>0</td>
+          </tr>
+
+          <tr>
+                <td>笔耕不辍</td>
+                <td><div style="background: #212529;
+                    width: 20px;
+                    height: 20px"></div></td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+
+
+
+
+            </tbody>
+        </table>
+    </div>
+
+
+{% endblock %}
+
+
+
+
+
+
+

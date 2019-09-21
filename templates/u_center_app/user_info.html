@@ -1,0 +1,53 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+<div style="height: 50px;"></div>
+
+<div style="width: 90%; margin: 10px auto;">
+        <table class="table table-striped" style="text-align: center; ">
+          <thead>
+            <tr>
+              <th></th>
+              <th scope="col">今日</th>
+              <th scope="col">历史累计</th>
+            </tr>
+          </thead>
+          <tbody>
+
+
+            <tr>
+                <td>提问</td>
+                <td>{{submit_cnt}}</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>评论</td>
+                <td>{{comment_cnt}}</td>
+                <td>0</td>
+            </tr>
+              <tr>
+                    <td>点赞</td>
+                    <td>{{ sended_star }}</td>
+                    <td>0</td>
+                </tr>
+              <tr>
+                <td>被点赞</td>
+                <td>{{ have_star }}</td>
+                <td>0</td>
+              </tr>
+
+
+            </tbody>
+        </table>
+    </div>
+
+
+{% endblock %}
+
+
+
+
+
+
+

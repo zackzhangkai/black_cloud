@@ -86,9 +86,9 @@ $ sudo apt install supervisor
 # 进入数据库
 $ psql -h localhost -U postgres
 
-postgres=# create user qc with password '12345678';
-postgres=# create database qc owner qc;
-postgres=# create database netstore_project owner qc;
+postgres=# create user admin with password '12345678';
+postgres=# create database admin owner admin;
+postgres=# create database black_cloud_project owner admin;
 postgres=# \q
 ~~~
 

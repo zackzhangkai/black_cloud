@@ -5,3 +5,4 @@ psycopg2-binary ==2.7.7
 pytz            ==2018.9
 setuptools      ==39.1.0
 uWSGI           ==2.0.18
+qingstor-sdk
