@@ -1,0 +1,27 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+<div style="width: 90%; margin: 10px auto;">
+    <form action="/community/comments/" method="post">
+        {% csrf_token %}
+        <thead>
+        <tr>
+            <p><p style="font-size: 20px;color: #005cbf">主题</p><p style="margin-left: 20px;">{{title}}</p></p>
+            <!--<p>article<input type="" name="article"></p>-->
+            <hr>
+            <p><p style="font-size: 20px;color: #005cbf">内容</p><p style="margin-left: 20px;">{{article}}</p></p>
+            <!--<p>article< type="" name="article"></p>-->
+            <!--<p><input type="submit" value="submit"></p>-->
+        </tr>
+        </thead>
+    </form>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
