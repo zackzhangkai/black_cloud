@@ -6,6 +6,8 @@ urlpatterns = [
     #path('login/', views.login, name='show_login_page'),
     path('show_topics/', views.show_topics, name='show_topics'),
     path('show_comments/', views.show_comments, name='show_comments'),
+    path('view_this_topic/', views.view_this_topic, name='view_this_topic'),
+    path('star_this_topic/', views.star_this_topic, name='star_this_topic'),
 
 ]
 

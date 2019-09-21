@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from community_app.models import Topic, Comment
+from community_app.models import Topic, Comment, StarUser
 from community_app import models
 
 @login_required
@@ -48,6 +48,30 @@ def show_comments(request):
 
 
 
+@login_required
+def view_this_topic(request):
+    """查看主题"""
 
+
+
+    return HttpResponse('view')
+
+
+@login_required
+def star_this_topic(request):
+    """给主题点赞"""
+
+    topic_id = request.GET.get('topic_id')
+    action_user_id = request.GET.get('action_user_id')
+    t_obj = Topic.objects.filter(id=topic_id).first()
+    t_obj.star = t_obj.star + 1
+    t_obj.save()
+    u_obj = User.objects.filter(id=action_user_id).first()
+
+
+    print(topic_id)
+    print(action_user_id)
+    print('!!!')
+    return redirect('community_app:show_topics')
 
 
