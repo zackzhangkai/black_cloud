@@ -169,7 +169,7 @@ LOGGING = {
             # deploying version
             # 'filename': '/data/app_log/netstore.log',
             # development version
-            'filename': './black_cloud.log',
+            'filename': '/var/log/black_cloud.log',
             'maxBytes': 4194304,  # 4 MB
             'backupCount': 10,
             'level': 'DEBUG',
