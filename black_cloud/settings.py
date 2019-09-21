@@ -87,10 +87,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'black_cloud_project',
-        'USER': 'admin',
+        'USER': 'qc',
         'PASSWORD': '12345678',
-        'HOST': '139.198.120.116',
-        'PORT': '31207',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 
 }

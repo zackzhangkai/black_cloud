@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 class Event(models.Model):
 
     insert_time = models.DateTimeField(auto_now_add=True)
-    involves_user = models.ManyToManyField(to=User)
+    # involves_user = models.ManyToManyField(to=User)
     subject = models.CharField(max_length=80)
 
 
