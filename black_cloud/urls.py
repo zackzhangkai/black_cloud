@@ -29,4 +29,5 @@ urlpatterns = [
     path('community/', include(('community_app.urls', 'community_app'))),
     path('u_center/', include(('u_center_app.urls', 'u_center_app'))),
     path('get_event/', include(('event_center_app.urls', 'event_center_app'))),
+    path('hot_list/', include(('hotlist_app.urls', 'hotlist_app'))),
 ]

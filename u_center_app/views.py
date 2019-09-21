@@ -65,7 +65,9 @@ def show_my_success(request):
         sended_star = 0
 
     max_val = max([submit_cnt, comment_cnt, have_star, sended_star])
-    print('hi-attention %s'%(have_star+1/max_val))
+    if max_val == 0:
+        max_val = 10
+    print('hi-attention %s'%((have_star+1)/max_val))
 
     degree_map = {
         0:'菜鸟',
@@ -80,10 +82,10 @@ def show_my_success(request):
     return render(request, 'u_center_app/user_success.html',
                   context={
                       'max_val': max_val,
-                      'yk': have_star, 'ykd':degree_map[have_star],'ykl':(have_star+1/max_val)*200,
-                      'zw': comment_cnt, 'zwd':degree_map[comment_cnt],'zwl':(comment_cnt+1/max_val)*200,
-                      'ly': have_star, 'lyd':degree_map[have_star],'lyd':(have_star+1/max_val)*200,
-                      'hj': sended_star, 'hjd':degree_map[sended_star],'hjl':(sended_star+1/max_val)*200,
+                      'yk': have_star, 'ykd':degree_map[have_star],'ykl':((have_star+1)/max_val)*200,
+                      'zw': comment_cnt, 'zwd':degree_map[comment_cnt],'zwl':((comment_cnt+1)/max_val)*200,
+                      'ly': have_star, 'lyd':degree_map[have_star],'lyl':((have_star+1/max_val))*200,
+                      'hj': sended_star, 'hjd':degree_map[sended_star],'hjl':((sended_star+1/max_val))*200,
 
                   })
 
