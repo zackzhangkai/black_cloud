@@ -12,8 +12,9 @@
           <thead>
             <tr>
               <th scope="col">主题</th>
-              <th scope="col">发题者</th>
-              <th scope="col">赞数</th>
+              <th scope="col">内容</th>
+              <th scope="col">发贴人</th>
+              <th scope="col">时间</th>
               <th scope="col"></th>
               <th scope="col"></th>
             </tr>
@@ -23,9 +24,9 @@
             {% for i in t_objs %}
             <tr>
                 <td>{{ i.title }}</td>
+                <td>{{ i.article }}</td>
                 <td>{{ i.user.username }}</td>
-                <td>{{ i.star }}</td>
-                <td><a href="{% url 'community_app:view_this_topic' %}?topic_id={{i.id}}">查看</a> <a href="{% url 'community_app:star_this_topic' %}?topic_id={{i.id}}&action_user_id={{request.user.id}}">点赞</a></td>
+                <td>{{ i.date }}</td>
             </tr>
             {% endfor %}
 
