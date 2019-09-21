@@ -51,16 +51,20 @@ def comments(request):
 @login_required
 def view_this_topic(request):
     """查看主题"""
-    t_objs = Topic.objects.all()
-    return render(request, 'community_app/view_this_topic.html',
+    topic_id = request.GET.get("topic_id")
+    t_objs = Topic.objects.filter(id=topic_id).first()
+    print('nononon')
+    print(t_objs)
+    title = t_objs.title
+    article = t_objs.article
+    print(title)
+    print(article)
+    return render(request, 'community_app/topic_info.html',
                   context={
-                      't_objs': t_objs
+                      'title': title,
+                      'article': article,
                   }
                   )
-
-
-    return HttpResponse('view')
-
 
 @login_required
 def star_this_topic(request):
