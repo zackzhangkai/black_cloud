@@ -1,0 +1,76 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+<div style="height: 50px;"></div>
+
+<div style="margin-left: 5%;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+margin-bottom: 40px;">
+    今日热点话题
+</div>
+
+<div style="width: 90%; margin: 10px auto;">
+        <table class="table table-striped" style="text-align: center; ">
+          <thead>
+            <tr>
+              <th scope="col">主题</th>
+              <th scope="col">题主</th>
+              <th scope="col">赞数</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {% for i in today_t_objs %}
+            <tr>
+                <td>{{ i.title }}</td>
+                <td>{{ i.user.username }}</td>
+                <td>{{ i.star }}</td>
+            </tr>
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+    </div>
+
+<div id="wall" style="height: 40px;"></div>
+
+
+<div style="margin-left: 5%;
+font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+margin-bottom: 40px;">
+    历史热点话题
+</div>
+<div style="width: 90%; margin: 10px auto;">
+        <table class="table table-striped" style="text-align: center; ">
+          <thead>
+            <tr>
+              <th scope="col">主题</th>
+              <th scope="col">题主</th>
+              <th scope="col">赞数</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {% for j in history_t_objs %}
+            <tr>
+                <td>{{ j.title }}</td>
+                <td>{{ j.user.username }}</td>
+                <td>{{ j.star }}</td>
+            </tr>
+            {% endfor %}
+
+
+            </tbody>
+        </table>
+    </div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
