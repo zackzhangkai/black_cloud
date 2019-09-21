@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from community_app.models import Topic, Comment, StarUser
+from event_center_app.models import Event
 from community_app import models
 
 @login_required
@@ -68,6 +69,10 @@ def star_this_topic(request):
     t_obj.save()
     u_obj = User.objects.filter(id=action_user_id).first()
 
+    long_str = '%s 刚刚为 %s 点亮了一下哦～' %(u_obj.username, t_obj.title)
+    e = Event.objects.create(subject=long_str)
+    e.save()
+    print(u_obj.username)
 
     print(topic_id)
     print(action_user_id)
