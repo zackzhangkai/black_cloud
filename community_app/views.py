@@ -25,7 +25,7 @@ def show_topics(request):
                   })
 
 @login_required
-def show_comments(request):
+def comments(request):
     """展示所有主题"""
     if request.method == 'POST':
         user = request.user
@@ -40,18 +40,22 @@ def show_comments(request):
         )
     else:
         t_objs = Topic.objects.all()
-        return render(request, 'community_app/show_comments.html',
+        return render(request, 'community_app/comments.html',
                   context={
                       't_objs': t_objs
                   }
         )
 
 
-
 @login_required
 def view_this_topic(request):
     """查看主题"""
-
+    t_objs = Topic.objects.all()
+    return render(request, 'community_app/view_this_topic.html',
+                  context={
+                      't_objs': t_objs
+                  }
+                  )
 
 
     return HttpResponse('view')
