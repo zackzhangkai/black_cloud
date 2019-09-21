@@ -3,6 +3,8 @@
 {% block content %}
 
 
+<a href="http://139.198.18.252/community/show_comments/">发贴</a>
+
 <div style="height: 50px;"></div>
 
 <div style="width: 90%; margin: 10px auto;">
@@ -28,21 +30,6 @@
             </tbody>
         </table>
     </div>
-
-
-<div style="width: 90%; margin: 10px auto;">
-<form action="/community/show_topics/" method="post"  >
-     {% csrf_token %}
-              <thead>
-            <tr>
-
-    <p>title<input type="text" name="title"></p>
-    <p>article<input type="text" name="article"></p>
-    <p><input type="submit" value="submit"></p>
-            </tr>
-              </thead>
-</form>
-</div>
 {% endblock %}
 
 

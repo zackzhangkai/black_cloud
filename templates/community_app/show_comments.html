@@ -1,0 +1,24 @@
+{% extends 'user_operations_app/operation_board.html' %}
+
+{% block content %}
+
+<div style="width: 90%; margin: 10px auto;">
+    <form action="/community/show_comments/" method="post">
+        {% csrf_token %}
+        <thead>
+        <tr>
+            <p>title<input type="text" name="title"></p>
+            <p>article<input type="text" name="article"></p>
+            <p><input type="submit" value="submit"></p>
+        </tr>
+        </thead>
+    </form>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
